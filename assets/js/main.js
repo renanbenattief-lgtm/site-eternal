@@ -555,8 +555,17 @@
   const contact = $('#contato');
   let lastY = 0;
   let contactInView = false;
+  let cityFormInView = false;
   if ('IntersectionObserver' in window && contact) {
     new IntersectionObserver((es) => es.forEach((e) => (contactInView = e.isIntersecting)), { threshold: 0.05 }).observe(contact);
+  }
+  // no celular, o botão flutuante sai da frente do formulário da cidade 3D
+  const cityForm = $('#cityForm');
+  if ('IntersectionObserver' in window && cityForm) {
+    new IntersectionObserver((es) => es.forEach((e) => {
+      cityFormInView = e.isIntersecting && window.innerWidth <= 900;
+      onScroll(lenis ? lenis.scroll : window.scrollY);
+    }), { threshold: 0.01 }).observe(cityForm);
   }
   function onScroll(y) {
     const vh = window.innerHeight;
@@ -568,7 +577,7 @@
     const max = document.documentElement.scrollHeight - vh;
     progress.style.setProperty('--p', max > 0 ? (y / max).toFixed(4) : 0);
     const jEnd = window.__journeyST ? window.__journeyST.end : vh * 1.3;
-    waFloat.classList.toggle('is-on', y > jEnd + vh * 0.3 && !contactInView);
+    waFloat.classList.toggle('is-on', y > jEnd + vh * 0.3 && !contactInView && !cityFormInView);
   }
   if (lenis) lenis.on('scroll', (e) => onScroll(e.scroll));
   else window.addEventListener('scroll', () => onScroll(window.scrollY), { passive: true });
@@ -660,6 +669,31 @@
         .then((buf) => new Promise((ok, err) => ac.decodeAudioData(buf, ok, err)));
       return loading;
     };
+    // efeitos curtos (o raio da cidade 3D): só tocam com o som ligado, sem passar pelo abafador
+    const SFX = { surge: 'assets/media/surge.mp3' };
+    const sfxBuf = {};
+    const loadSfx = (name) => {
+      if (!sfxBuf[name]) {
+        sfxBuf[name] = fetch(SFX[name])
+          .then((r) => r.arrayBuffer())
+          .then((buf) => new Promise((ok, err) => ac.decodeAudioData(buf, ok, err)));
+        sfxBuf[name].catch(() => { delete sfxBuf[name]; });
+      }
+      return sfxBuf[name];
+    };
+    window.__sfx = (name) => {
+      if (!on || !ac || !SFX[name]) return;
+      loadSfx(name).then((buffer) => {
+        if (!on) return;
+        const src = ac.createBufferSource();
+        src.buffer = buffer;
+        const g = ac.createGain();
+        g.gain.value = 0.85;
+        src.connect(g);
+        g.connect(ac.destination);
+        src.start();
+      }).catch(() => {});
+    };
     const setUI = () => {
       soundBtn.classList.toggle('is-on', on);
       soundBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
@@ -669,7 +703,9 @@
       on = !on;
       setUI();
       if (on) {
-        prepare().then((buffer) => {
+        const ready = prepare();
+        loadSfx('surge').catch(() => {});
+        ready.then((buffer) => {
           if (!on) return;
           if (!started) {
             const src = ac.createBufferSource();

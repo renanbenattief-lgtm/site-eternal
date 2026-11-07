@@ -583,17 +583,47 @@ fieldset.field { border: 0; margin: 0; padding: 0; min-width: 0; }
 .city__close { position: absolute; right: 8px; top: 6px; width: 36px; height: 36px; font-size: 24px; line-height: 1; color: var(--muted); }
 .city__close:hover { color: var(--fg); }
 .city__info-d { margin: 0; color: #C9D2D6; font-size: 0.98rem; line-height: 1.55; }
+/* números ao vivo da simulação */
+.city__metrics {
+  position: absolute; right: 20px; bottom: 20px; z-index: 2; width: 312px; pointer-events: none;
+  padding: 16px 18px 15px; border-radius: 16px; background: rgba(5, 8, 10, 0.72); border: 1px solid var(--line);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  animation: cityIn 0.8s var(--ease-out) both; transition: opacity 0.4s;
+}
+@keyframes cityIn { from { opacity: 0; transform: translateY(10px); } }
+.city__stage.is-focus .city__metrics { opacity: 0; }
+.city__live {
+  display: flex; align-items: center; gap: 9px; margin: 0 0 13px;
+  font-family: var(--font-wide); font-size: 0.6rem; letter-spacing: 0.26em; text-transform: uppercase; color: var(--fg);
+}
+.city__live i { width: 7px; height: 7px; border-radius: 50%; background: #FF4F7B; box-shadow: 0 0 12px #FF4F7B; animation: cityload 1.4s ease-in-out infinite; }
+.city__metrics dl { margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 13px 18px; }
+.city__metrics dl div { display: flex; flex-direction: column-reverse; gap: 3px; min-width: 0; }
+.city__metrics dd {
+  margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 1.5rem; line-height: 1.05; letter-spacing: -0.01em;
+  color: var(--fg); font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.city__metrics dd[data-m="msgs"] { color: var(--cyan); }
+.city__metrics dt { font-family: var(--font-wide); font-size: 0.55rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+.city__metrics dt .s { display: none; }
 @media (min-width: 1100px) {
   .city__form { width: min(820px, calc(100% - 40px)); grid-template-columns: 1.25fr 1fr auto; align-items: end; gap: 22px; padding: 18px 22px; }
   .city__form .btn { width: auto; padding: 0 26px; }
   .city__cta { grid-column: 1 / -1; text-align: left; }
-  .city__info { right: auto; left: 20px; top: 20px; bottom: auto; }
+  .city__info { right: 20px; left: auto; top: 76px; bottom: auto; }
 }
 @media (max-width: 900px) {
   .city__stage { height: 70vh; height: 70svh; min-height: 440px; }
   .city__form { position: relative; left: auto; bottom: auto; width: 100%; margin-top: 14px; }
   .city__hint { display: none; }
   .city__info { left: 12px; right: 12px; bottom: 12px; width: auto; }
+  .city__metrics { left: 10px; right: 10px; top: auto; bottom: 10px; width: auto; padding: 10px 12px 11px; border-radius: 14px; }
+  .city__live { margin-bottom: 7px; font-size: 0.5rem; }
+  .city__metrics dl { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+  .city__metrics dd { font-size: clamp(0.84rem, 3.7vw, 1.05rem); }
+  .city__metrics dt { font-size: 0.47rem; letter-spacing: 0.1em; }
+  .city__metrics dt .l { display: none; }
+  .city__metrics dt .s { display: inline; }
 }
 
 /* ---------- camadas globais ---------- */
