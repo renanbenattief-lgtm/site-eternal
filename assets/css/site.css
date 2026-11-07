@@ -133,25 +133,29 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   transition: opacity 0.9s var(--ease-out), visibility 0.9s;
 }
 .loader.is-done { opacity: 0; visibility: hidden; }
-.loader__inner { display: grid; justify-items: center; gap: 22px; }
-.loader__slash {
-  width: 28px; height: 74px; position: relative;
+.loader__inner { display: grid; justify-items: center; gap: clamp(22px, 3.2vh, 34px); width: min(84vw, 600px); }
+.loader__logo { width: 100%; height: auto; overflow: visible; transition: transform 0.9s var(--ease-out), filter 0.9s var(--ease-out); }
+.ld-ghost use { fill: none; stroke: rgba(242, 245, 246, 0.17); stroke-width: 1px; }
+.ld-fill { fill: #F2F5F6; }
+.ld-hot use { fill: #C9FDFE; }
+.ld-slash { fill: var(--cyan); animation: ldIn 0.6s ease-out both, ldPulse 1.6s ease-in-out 0.6s infinite; }
+@keyframes ldIn { from { opacity: 0; } }
+@keyframes ldPulse { 50% { opacity: 0.55; } }
+.ld-front { fill: #E9FFFF; opacity: 0.95; transition: opacity 0.3s; }
+.loader__meta {
+  margin: 0; display: flex; align-items: center; gap: 14px; transition: opacity 0.4s;
+  font-family: var(--font-wide); font-size: 0.56rem; letter-spacing: 0.34em; text-transform: uppercase; color: var(--muted);
 }
-.loader__slash::before, .loader__slash i {
-  content: ""; position: absolute; left: 50%; top: 0; width: 3px; height: 100%;
-  transform: translateX(-50%) skewX(-32deg); transform-origin: top;
-  background: rgba(9, 239, 241, 0.16);
-}
-.loader__slash i {
-  background: var(--cyan);
-  box-shadow: 0 0 16px var(--cyan-glow);
-  transform: translateX(-50%) skewX(-32deg) scaleY(var(--p, 0));
-  transition: transform 0.25s linear;
-}
+.loader__meta i { width: 22px; height: 1px; background: var(--cyan); }
 .loader__count {
-  font-family: var(--font-mono); font-size: 0.8rem; letter-spacing: 0.2em; color: var(--muted);
+  font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.16em; color: #C9D2D6;
   font-variant-numeric: tabular-nums;
 }
+/* 100%: a logo inteira brilha, a linha de luz some e ela voa em direção à tela enquanto o site abre */
+.loader.is-full .ld-front, .loader.is-full .loader__meta { opacity: 0; }
+.loader.is-full .loader__logo { filter: drop-shadow(0 0 18px rgba(9, 239, 241, 0.55)) brightness(1.25); }
+.loader.is-done .loader__logo { transform: scale(1.18); filter: blur(6px) brightness(1.6); }
+.reduced .ld-slash { animation: none; }
 
 /* ---------- cabeçalho ---------- */
 .site-header {

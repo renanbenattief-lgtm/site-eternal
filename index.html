@@ -18,7 +18,7 @@
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
 <link rel="preload" href="assets/fonts/manrope-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/montserrat-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="assets/css/site.css?v=801ee103">
+<link rel="stylesheet" href="assets/css/site.css?v=6854dbe1">
 <script>document.documentElement.classList.add('js');</script>
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"ProfessionalService","name":"ETERNAL","slogan":"Construindo sua presença no digital","url":"https://agenciaeternal.com.br/","description":"Agência de marketing especializada em posicionamento e presença digital.","telephone":"+55 69 99313-0318","sameAs":["https://www.instagram.com/agenciaeternal/"]}
@@ -26,11 +26,26 @@
 </head>
 <body class="is-loading">
 
-<!-- carregamento: o traço do R enche conforme as cenas chegam -->
+<!-- carregamento: o traço do R aparece aceso e a logo ETERNAL vai se acendendo da esquerda
+     para a direita conforme o site carrega; no fim ela brilha e voa em direção à tela -->
 <div class="loader" id="loader" aria-hidden="true">
   <div class="loader__inner">
-    <div class="loader__slash"><i></i></div>
-    <div class="loader__count" id="loaderCount">000</div>
+    <svg class="loader__logo" viewBox="0 0 1340 127">
+      <defs>
+        <path id="ldW" vector-effect="non-scaling-stroke" d="M0,0 L95,0 L95,16 L16,16 L16,43 L0,43 Z M0,56 L70,56 L70,72 L16,72 L16,111 L95,111 L95,127 L0,127 Z M205,0 L315,0 L315,16 L268,16 L268,127 L252,127 L252,16 L205,16 Z M417,0 L512,0 L512,16 L433,16 L433,43 L417,43 Z M417,56 L487,56 L487,72 L433,72 L433,111 L512,111 L512,127 L417,127 Z M604,0 L678,0 C696.77,0 712,17.92 712,40 C712,62.08 696.77,80 678,80 L678.16,80 L712,127 L691.92,127 L648,66 L676,66 C686.49,66 695,54.8 695,41 C695,27.2 686.49,16 676,16 L621,16 L621,24.29 Z M815,0 L831,0 L917,100 L917,0 L933,0 L933,127 L917,127 L831,27 L831,127 L815,127 Z M1080.5,0 L1096.5,0 L1155,127 L1136,127 L1088.5,22 L1041,127 L1022,127 Z M1250,0 L1267,0 L1267,111 L1340,111 L1340,127 L1250,127 Z"/>
+        <path id="ldA" vector-effect="non-scaling-stroke" d="M621,67.28 L664,127 L647,127 L621,90.89 Z"/>
+        <clipPath id="ldClip" clipPathUnits="userSpaceOnUse"><rect id="ldClipRect" x="-20" y="-40" width="0" height="207"/></clipPath>
+        <linearGradient id="ldRamp" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="0.8" stop-color="#fff" stop-opacity="0.85"/><stop offset="1" stop-color="#fff" stop-opacity="1"/></linearGradient>
+        <mask id="ldHotMask" maskUnits="userSpaceOnUse" x="-500" y="-80" width="2400" height="287"><rect id="ldHotRect" x="-500" y="-80" width="170" height="287" fill="url(#ldRamp)"/></mask>
+        <filter id="ldGlow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <g class="ld-ghost"><use href="#ldW"/><use href="#ldA"/></g>
+      <g clip-path="url(#ldClip)"><use href="#ldW" class="ld-fill"/></g>
+      <g class="ld-hot" mask="url(#ldHotMask)"><use href="#ldW"/></g>
+      <use href="#ldA" class="ld-slash" filter="url(#ldGlow)"/>
+      <rect id="ldFront" class="ld-front" x="-20" y="-26" width="3" height="179" rx="1.5" filter="url(#ldGlow)"/>
+    </svg>
+    <p class="loader__meta"><span>Carregando a experiência</span><i></i><span class="loader__count" id="loaderCount">000</span></p>
   </div>
 </div>
 
@@ -445,6 +460,6 @@
 <script src="assets/js/vendor/lenis.min.js?v=acddbf76"></script>
 <script src="assets/js/particles.js?v=a7727342"></script>
 <script src="assets/js/demo.js?v=415a3123"></script>
-<script src="assets/js/main.js?v=77729e86"></script>
+<script src="assets/js/main.js?v=d71df937"></script>
 </body>
 </html>

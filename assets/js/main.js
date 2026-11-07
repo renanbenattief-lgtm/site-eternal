@@ -137,7 +137,17 @@
      --------------------------------------------------------------------- */
   const loader = $('#loader');
   const loaderCount = $('#loaderCount');
-  const loaderBar = $('.loader__slash i');
+  const ldClip = $('#ldClipRect');
+  const ldFront = $('#ldFront');
+  const ldHot = $('#ldHotRect');
+  // desenha o progresso: a logo se acende até o ponto p (0 a 1), com a linha de luz na frente
+  const paintLoader = (p) => {
+    const x = -12 + 1364 * p;
+    if (ldClip) ldClip.setAttribute('width', Math.max(0, x + 20).toFixed(1));
+    if (ldFront) ldFront.setAttribute('x', (x - 1.5).toFixed(1));
+    if (ldHot) ldHot.setAttribute('x', (x - 170).toFixed(1));
+    loaderCount.textContent = String(Math.round(p * 100)).padStart(3, '0');
+  };
   const load = { fonts: 0, particles: 0, video: 0 };
   const loadTarget = () => load.fonts * 0.15 + load.particles * 0.3 + load.video * 0.55;
   let shown = 0;
@@ -149,10 +159,14 @@
     const target = loadTarget();
     shown += (target - shown) * 0.08 + 0.0015;
     shown = Math.min(shown, target);
-    loaderCount.textContent = String(Math.round(shown * 100)).padStart(3, '0');
-    loaderBar.style.setProperty('--p', shown.toFixed(3));
-    if (shown >= 0.999 && performance.now() - t0 > 1100) finishLoading();
-    else requestAnimationFrame(loaderTick);
+    paintLoader(shown);
+    if (shown >= 0.999 && performance.now() - t0 > 1100) {
+      // a logo completa brilha por um instante antes de o site abrir
+      loaderDone = true;
+      paintLoader(1);
+      loader.classList.add('is-full');
+      setTimeout(finishLoading, reduced ? 0 : 520);
+    } else requestAnimationFrame(loaderTick);
   }
 
   (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => (load.fonts = 1));
@@ -166,7 +180,7 @@
 
   function finishLoading() {
     loaderDone = true;
-    loaderCount.textContent = '100';
+    paintLoader(1);
     loader.classList.add('is-done');
     body.classList.remove('is-loading');
     window.scrollTo(0, 0);
