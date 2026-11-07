@@ -18,7 +18,7 @@
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
 <link rel="preload" href="assets/fonts/manrope-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/montserrat-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="assets/css/site.css?v=0d7a7c66">
+<link rel="stylesheet" href="assets/css/site.css?v=fb831f97">
 <script>document.documentElement.classList.add('js');</script>
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"ProfessionalService","name":"ETERNAL","slogan":"Construindo sua presença no digital","url":"https://agenciaeternal.com.br/","description":"Agência de marketing especializada em posicionamento e presença digital.","telephone":"+55 69 99313-0318","sameAs":["https://www.instagram.com/agenciaeternal/"]}
@@ -238,10 +238,10 @@
     <div class="city__head">
       <p class="label label--cyan"><span class="rule"></span>Simulação interativa</p>
       <h2 class="statement statement--md" id="city-titulo" data-reveal><span class="line">Veja sua empresa</span> <span class="line dim">acender no digital<span class="dot">.</span></span></h2>
-      <p class="lead" data-reveal>Toda empresa já existe na cidade. O que muda é ser encontrada. Digite o nome da sua e veja o que acontece quando ela acende no digital: curtidas e visualizações no Instagram, mensagens chegando no WhatsApp, sua marca no Google, no Maps, em vídeo e no site.</p>
+      <p class="lead" data-reveal>Toda empresa já existe na cidade. O que muda é ser encontrada. Digite o nome da sua, coloque a logo se quiser, e veja o que acontece quando ela acende no digital: curtidas e visualizações no Instagram, mensagens chegando no WhatsApp, sua marca no Google, no Maps, em vídeo e no site.</p>
     </div>
     <div class="city__wrap">
-      <div class="city__stage" id="cityStage" data-src="assets/js/city.js?v=7addb078">
+      <div class="city__stage" id="cityStage" data-src="assets/js/city.js?v=7fdef20e">
         <canvas class="city__canvas" id="cityCanvas" role="img" aria-label="Cidade em 3D. Arraste para girar e clique nos painéis para ver cada canal."></canvas>
         <img class="city__fallback" src="assets/img/city-fallback.jpg" alt="Simulação: prédio aceso na cidade, com painéis de Instagram, Facebook, Google e WhatsApp em volta" loading="lazy" width="1600" height="900">
         <div class="city__loading" aria-hidden="true"><i></i><span>Carregando a cidade</span></div>
@@ -270,7 +270,18 @@
         </div>
       </div>
       <form class="city__form" id="cityForm" autocomplete="off">
-        <div class="field"><label for="cityName">Nome da sua empresa</label><input id="cityName" name="cityName" type="text" maxlength="28" placeholder="Ex.: Clínica Aurora"></div>
+        <div class="field"><label for="cityName">Nome da sua empresa</label>
+          <div class="city__namebox">
+            <input id="cityName" name="cityName" type="text" maxlength="28" placeholder="Ex.: Clínica Aurora">
+            <input class="sr-only" id="cityLogo" name="cityLogo" type="file" accept="image/*">
+            <label class="city__logo" for="cityLogo" aria-label="Adicionar a logo da sua empresa (opcional)" title="Adicionar a logo da sua empresa (opcional)">
+              <img id="cityLogoThumb" alt="" width="22" height="22" hidden>
+              <svg class="city__logo-ic" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="12.5" height="12.5" rx="2.6"/><path d="M2.4 13.2l3.6-3.6 3 3 1.9-1.9 3.4 3.4"/><path d="M16.6 1.8v5M14.1 4.3h5"/></svg>
+              <span id="cityLogoText">Logo</span>
+            </label>
+            <button class="city__logo-x" id="cityLogoClear" type="button" aria-label="Remover a logo" hidden>×</button>
+          </div>
+        </div>
         <div class="field"><label for="citySeg">Segmento</label>
           <select id="citySeg" name="citySeg">
             <option value="industria">Indústria</option>
@@ -284,6 +295,7 @@
         </div>
         <button class="btn btn--solid" type="submit">Acender no digital</button>
         <a class="city__cta" id="cityCta" href="https://wa.me/5569993130318" target="_blank" rel="noopener" hidden>Quero essa presença de verdade →</a>
+        <p class="city__note" id="cityLogoNote" role="status" hidden></p>
       </form>
       <p class="sr-only" id="cityLive" aria-live="polite"></p>
     </div>
@@ -401,6 +413,6 @@
 <script src="assets/js/vendor/lenis.min.js?v=acddbf76"></script>
 <script src="assets/js/particles.js?v=a7727342"></script>
 <script src="assets/js/demo.js?v=415a3123"></script>
-<script src="assets/js/main.js?v=7f9f596f"></script>
+<script src="assets/js/main.js?v=46bcb273"></script>
 </body>
 </html>

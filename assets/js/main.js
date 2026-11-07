@@ -563,7 +563,7 @@
   const cityForm = $('#cityForm');
   if ('IntersectionObserver' in window && cityForm) {
     new IntersectionObserver((es) => es.forEach((e) => {
-      cityFormInView = e.isIntersecting && window.innerWidth <= 900;
+      cityFormInView = e.isIntersecting && window.innerWidth <= 1099;
       onScroll(lenis ? lenis.scroll : window.scrollY);
     }), { threshold: 0.01 }).observe(cityForm);
   }
