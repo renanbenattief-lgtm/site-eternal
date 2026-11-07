@@ -240,6 +240,65 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   padding-left: max(var(--gutter), env(safe-area-inset-left, 0px));
   padding-right: max(var(--gutter), env(safe-area-inset-right, 0px));
 }
+/* "o que somos": um feixe de luz escreve a frase, as linhas se abrem para os lados
+   e, de tempos em tempos, um brilho passa pelas letras */
+.hero__top::before {
+  content: ""; position: absolute; left: 50%; top: 50%; width: min(88vw, 1000px); height: 160px; pointer-events: none;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(closest-side, rgba(9, 239, 241, 0.085), rgba(9, 239, 241, 0) 100%);
+  opacity: 0; transition: opacity 2.4s ease 0.8s;
+}
+.hero__top.is-in::before { opacity: 1; animation: kHalo 6.5s ease-in-out 3.4s infinite; }
+@keyframes kHalo { 50% { opacity: 0.5; } }
+.kicker {
+  position: relative; z-index: 1; margin: 0; display: flex; align-items: center; justify-content: center;
+  gap: clamp(14px, 1.7vw, 28px); font-size: clamp(0.72rem, 1.06vw, 1rem); letter-spacing: 0.42em;
+  color: rgba(185, 192, 197, 0.9); text-wrap: balance;
+}
+.kicker::before, .kicker::after {
+  content: ""; flex: none; width: clamp(36px, 9vw, 160px); height: 1px; transform: scaleX(0);
+  transition: transform 1.3s var(--ease-out) 1.3s;
+}
+.kicker::before { background: linear-gradient(90deg, rgba(9, 239, 241, 0), rgba(9, 239, 241, 0.9)); transform-origin: right center; }
+.kicker::after { background: linear-gradient(90deg, rgba(9, 239, 241, 0.9), rgba(9, 239, 241, 0)); transform-origin: left center; }
+.hero__top.is-in .kicker::before, .hero__top.is-in .kicker::after { transform: scaleX(1); }
+.kicker__w { position: relative; display: inline-block; }
+.kicker__t, .kicker__shine { display: inline-block; padding-left: 0.42em; }
+.kicker__t strong { font-weight: 500; color: #F2F5F6; text-shadow: 0 0 18px rgba(242, 245, 246, 0.28); }
+.kicker__t b { font-weight: 500; color: var(--cyan); text-shadow: 0 0 16px rgba(9, 239, 241, 0.6); }
+.kicker__shine {
+  position: absolute; inset: 0; color: transparent; pointer-events: none;
+  background: linear-gradient(100deg, rgba(255, 255, 255, 0) 40%, rgba(255, 255, 255, 0.9) 47%, #fff 50%, rgba(170, 252, 253, 0.9) 53%, rgba(255, 255, 255, 0) 60%) no-repeat;
+  background-size: 280% 100%; background-position: 135% 0;
+  -webkit-background-clip: text; background-clip: text;
+  filter: drop-shadow(0 0 5px rgba(9, 239, 241, 0.95)) drop-shadow(0 0 12px rgba(9, 239, 241, 0.55));
+}
+.hero__top.is-in .kicker__shine { animation: kShine 7s ease-in-out 3s infinite; }
+@keyframes kShine { 0% { background-position: 135% 0; } 30%, 100% { background-position: -35% 0; } }
+/* entrada: a frase aparece atrás de um feixe de luz que corre da esquerda para a direita */
+.js .kicker__t, .js .kicker__shine {
+  -webkit-mask-image: linear-gradient(90deg, #000 47%, transparent 53%); mask-image: linear-gradient(90deg, #000 47%, transparent 53%);
+  -webkit-mask-size: 250% 100%; mask-size: 250% 100%; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+  -webkit-mask-position: 100% 0; mask-position: 100% 0;
+}
+.js .hero__top.is-in .kicker__t { animation: kReveal 1.7s cubic-bezier(0.65, 0, 0.35, 1) both; }
+.js .hero__top.is-in .kicker__shine { animation: kReveal 1.7s cubic-bezier(0.65, 0, 0.35, 1) both, kShine 7s ease-in-out 3s infinite; }
+@keyframes kReveal { from { -webkit-mask-position: 100% 0; mask-position: 100% 0; } to { -webkit-mask-position: 0 0; mask-position: 0 0; } }
+.kicker__w::after {
+  content: ""; position: absolute; top: -45%; bottom: -45%; left: -25%; width: 2px; border-radius: 2px; pointer-events: none;
+  background: linear-gradient(rgba(255, 255, 255, 0), #fff 35%, var(--cyan) 70%, rgba(9, 239, 241, 0));
+  box-shadow: 0 0 14px 2px rgba(9, 239, 241, 0.7); opacity: 0;
+}
+.hero__top.is-in .kicker__w::after { animation: kScan 1.7s cubic-bezier(0.65, 0, 0.35, 1) both; }
+@keyframes kScan { 0% { left: -25%; opacity: 0; } 12% { opacity: 1; } 86% { opacity: 1; } 100% { left: 125%; opacity: 0; } }
+.reduced .kicker__t, .reduced .kicker__shine { -webkit-mask-image: none; mask-image: none; animation: none !important; }
+.reduced .kicker__w::after { display: none; }
+.reduced .kicker::before, .reduced .kicker::after { transform: none; transition: none; }
+.reduced .hero__top::before { opacity: 1; animation: none; }
+@media (max-width: 640px) {
+  .kicker { font-size: 0.74rem; }
+  .kicker::before, .kicker::after { display: none; }
+}
 .hero__bottom {
   position: absolute; left: 0; right: 0; top: calc(50% + clamp(56px, 6.5vw, 120px));
   display: grid; justify-items: center; gap: 18px; text-align: center;

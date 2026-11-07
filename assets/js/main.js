@@ -202,7 +202,8 @@
      Abertura: a logo nasce das partículas
      --------------------------------------------------------------------- */
   function intro() {
-    if (reduced) return;
+    const heroTopEl = $('.hero__top');
+    if (reduced) { if (heroTopEl) heroTopEl.classList.add('is-in'); return; }
     if (particles) {
       const o = { v: 0 };
       gsap.to(o, {
@@ -214,7 +215,8 @@
         if (particles && particles.running && window.scrollY < window.innerHeight * 0.2) particles.firePulse();
       }, 7000);
     }
-    gsap.from('.hero__top .label', { opacity: 0, letterSpacing: '1.1em', duration: 2.2, delay: 1.0, ease: 'expo.out' });
+    // a frase "o que somos" é escrita por um feixe de luz (CSS), junto com a logo se formando
+    if (heroTopEl) setTimeout(() => heroTopEl.classList.add('is-in'), 1000);
     gsap.from('.hero__slogan', { opacity: 0, y: 16, duration: 1.6, delay: 1.9, ease: 'expo.out' });
     gsap.from('.hero__cue span, .hero__cue i', { opacity: 0, y: 10, duration: 1.2, delay: 2.8, stagger: 0.15, ease: 'expo.out' });
     gsap.from('.site-header .nav', { opacity: 0, y: -10, duration: 1.2, delay: 2.2, ease: 'expo.out' });
