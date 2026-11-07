@@ -180,6 +180,16 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 }
 .nav a.nav__link:hover { color: var(--fg); }
 .nav a.nav__link:hover::after { transform: scaleX(1); transform-origin: left; }
+/* atalho para a cidade 3D */
+.nav a.nav__ignite {
+  display: none; align-items: center; gap: 8px; padding: 6px 0;
+  font-family: var(--font-wide); font-size: 0.7rem; letter-spacing: 0.32em; text-transform: uppercase; color: var(--cyan);
+  transition: color 0.25s, text-shadow 0.25s;
+}
+.nav a.nav__ignite:hover { color: #7FF6F8; text-shadow: 0 0 14px rgba(9, 239, 241, 0.6); }
+.nav__ignite svg, .ignite-float svg { width: 14px; height: 14px; flex: none; filter: drop-shadow(0 0 5px rgba(9, 239, 241, 0.9)); animation: spark 2.4s ease-in-out infinite; }
+@keyframes spark { 0%, 100% { opacity: 1; } 45% { opacity: 0.45; } 50% { opacity: 1; } 55% { opacity: 0.6; } }
+@media (min-width: 1200px) { .nav a.nav__ignite { display: inline-flex; } }
 
 /* som ambiente (desligado por padrão) */
 .sound {
@@ -735,6 +745,33 @@ fieldset.field { border: 0; margin: 0; padding: 0; min-width: 0; }
 .to-top { right: max(23px, calc(env(safe-area-inset-right, 0px) + 17px)); bottom: max(18px, calc(env(safe-area-inset-bottom, 0px) + 12px)); }
 .to-top.is-high { bottom: max(86px, calc(env(safe-area-inset-bottom, 0px) + 80px)); }
 .to-top::after { right: calc(100% + 10px); }
+
+/* "Acenda sua marca": pílula no centro, embaixo; some quando a cidade 3D ou o contato estão na tela */
+.ignite-float {
+  position: fixed; z-index: 45; left: 50%; bottom: max(18px, calc(env(safe-area-inset-bottom, 0px) + 12px));
+  display: inline-flex; align-items: center; gap: 9px; height: 46px; padding: 0 20px; border-radius: 999px; overflow: hidden;
+  font-family: var(--font-wide); font-size: 0.6rem; letter-spacing: 0.24em; text-transform: uppercase; white-space: nowrap;
+  color: var(--fg); text-decoration: none; background: rgba(5, 8, 10, 0.8); border: 1px solid rgba(9, 239, 241, 0.45);
+  box-shadow: 0 10px 34px -12px rgba(9, 239, 241, 0.55); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  opacity: 0; transform: translate(-50%, 14px); pointer-events: none;
+  transition: opacity 0.4s, transform 0.5s var(--ease-out), border-color 0.25s, color 0.25s;
+}
+.ignite-float svg { color: var(--cyan); }
+.ignite-float.is-shown { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+.ignite-float:hover, .ignite-float:focus-visible { border-color: var(--cyan); color: #fff; }
+.ignite-float::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(105deg, transparent 38%, rgba(9, 239, 241, 0.32) 50%, transparent 62%);
+  background-size: 260% 100%; background-position: 130% 0; animation: shimmer 4.2s ease-in-out infinite;
+}
+@keyframes shimmer { 0%, 58% { background-position: 130% 0; } 100% { background-position: -30% 0; } }
+@media (max-width: 380px) { .ignite-float { padding: 0 15px; letter-spacing: 0.16em; gap: 7px; } }
+.reduced .ignite-float::before, .reduced .nav__ignite svg, .reduced .ignite-float svg { animation: none; }
+@media (prefers-reduced-motion: reduce) { .ignite-float::before, .nav__ignite svg, .ignite-float svg { animation: none; } }
+
+/* convite para digitar o nome depois que a cidade acende com "Sua Marca" */
+.city__namebox.is-invite { animation: invite 1.5s ease-in-out 3; }
+@keyframes invite { 50% { border-bottom-color: var(--cyan); box-shadow: 0 10px 18px -14px rgba(9, 239, 241, 0.9); } }
 
 /* cortina rápida ao voltar ao topo (evita passar a jornada inteira em alta velocidade) */
 .curtain {

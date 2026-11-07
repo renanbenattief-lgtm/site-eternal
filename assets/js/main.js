@@ -550,12 +550,18 @@
   const waFloat = $('#waFloat');
   const soundFloat = $('#soundFloat');
   const toTop = $('#toTop');
+  const igniteFloat = $('#igniteFloat');
+  const cityStageEl = $('#cityStage');
+  let cityInView = false;
   const contact = $('#contato');
   let lastY = 0;
   let contactInView = false;
   let cityFormInView = false;
   if ('IntersectionObserver' in window && contact) {
-    new IntersectionObserver((es) => es.forEach((e) => (contactInView = e.isIntersecting)), { threshold: 0.05 }).observe(contact);
+    new IntersectionObserver((es) => es.forEach((e) => {
+      contactInView = e.isIntersecting;
+      onScroll(lenis ? lenis.scroll : window.scrollY); // atualiza os botões mesmo depois de um pulo sem rolagem
+    }), { threshold: 0.05 }).observe(contact);
   }
   // no celular, o botão flutuante sai da frente do formulário da cidade 3D
   const cityForm = $('#cityForm');
@@ -564,6 +570,12 @@
       cityFormInView = e.isIntersecting && window.innerWidth <= 1099;
       onScroll(lenis ? lenis.scroll : window.scrollY);
     }), { threshold: 0.01 }).observe(cityForm);
+  }
+  if ('IntersectionObserver' in window && cityStageEl) {
+    new IntersectionObserver((es) => es.forEach((e) => {
+      cityInView = e.isIntersecting;
+      onScroll(lenis ? lenis.scroll : window.scrollY);
+    }), { threshold: 0.12 }).observe(cityStageEl);
   }
   function onScroll(y) {
     const vh = window.innerHeight;
@@ -575,13 +587,17 @@
     const max = document.documentElement.scrollHeight - vh;
     progress.style.setProperty('--p', max > 0 ? (y / max).toFixed(4) : 0);
     const jEnd = window.__journeyST ? window.__journeyST.end : vh * 1.3;
-    waFloat.classList.toggle('is-on', y > jEnd + vh * 0.3 && !contactInView && !cityFormInView);
-    // som e "voltar ao topo" aparecem depois que a pessoa desce (no celular, saem da frente do formulário da cidade)
-    if (soundFloat) soundFloat.classList.toggle('is-shown', y > vh * 1.2 && !cityFormInView);
+    // no celular e tablet, os botões flutuantes saem da frente da cidade 3D (cena e formulário)
+    const cityZone = window.innerWidth <= 1099 && (cityInView || cityFormInView);
+    waFloat.classList.toggle('is-on', y > jEnd + vh * 0.3 && !contactInView && !cityZone);
+    // som e "voltar ao topo" aparecem depois que a pessoa desce
+    if (soundFloat) soundFloat.classList.toggle('is-shown', y > vh * 1.2 && !cityZone);
     if (toTop) {
-      toTop.classList.toggle('is-shown', y > vh * 2 && !cityFormInView);
+      toTop.classList.toggle('is-shown', y > vh * 2 && !cityZone);
       toTop.classList.toggle('is-high', waFloat.classList.contains('is-on'));
     }
+    // "Acenda sua marca" some quando a cidade 3D ou o contato já estão na tela
+    if (igniteFloat) igniteFloat.classList.toggle('is-shown', y > vh * 0.6 && !cityInView && !cityFormInView && !contactInView);
   }
   if (lenis) lenis.on('scroll', (e) => onScroll(e.scroll));
   else window.addEventListener('scroll', () => onScroll(window.scrollY), { passive: true });
@@ -590,7 +606,7 @@
   /* ---------------------------------------------------------------------
      Âncoras do menu (respeitando as cenas presas)
      --------------------------------------------------------------------- */
-  $$('a[href^="#"]').forEach((a) => {
+  $$('a[href^="#"]:not([data-ignite])').forEach((a) => {
     a.addEventListener('click', (e) => {
       const id = a.getAttribute('href');
       if (id.length < 2) return;
@@ -747,27 +763,54 @@
   }
 
   /* ---------------------------------------------------------------------
-     Voltar ao topo: cortina rápida, pula para o início e abre de novo
-     (passar a jornada inteira rolando em alta velocidade ficaria pesado)
+     Pulos longos (voltar ao topo, ir para a cidade 3D): cortina rápida, pula
+     direto e abre de novo (rolar a jornada inteira em alta velocidade pesaria)
      --------------------------------------------------------------------- */
-  if (toTop) {
-    const curtain = $('#curtain');
-    const jumpTop = () => {
-      if (lenis) lenis.scrollTo(0, { immediate: true, force: true });
-      else window.scrollTo(0, 0);
-      onScroll(0);
-      if (window.ScrollTrigger) window.ScrollTrigger.update();
-    };
-    const focusTop = () => { const a = $('#header .brand') || $('#header a'); if (a) a.focus({ preventScroll: true }); };
-    toTop.addEventListener('click', () => {
-      if (reduced || !curtain) { jumpTop(); focusTop(); return; }
-      curtain.classList.add('is-on');
-      setTimeout(() => {
-        jumpTop();
-        setTimeout(() => { curtain.classList.remove('is-on'); focusTop(); }, 220);
-      }, 420);
-    });
+  const curtain = $('#curtain');
+  function goTo(y, done) {
+    const from = lenis ? lenis.scroll : window.scrollY;
+    const far = Math.abs(y - from) > window.innerHeight * 1.6;
+    const land = () => { onScroll(y); if (window.ScrollTrigger) window.ScrollTrigger.update(); };
+    if (reduced || !curtain || !far) {
+      if (lenis) lenis.scrollTo(y, reduced ? { immediate: true, force: true } : { duration: 1.1 });
+      else window.scrollTo({ top: y, behavior: reduced ? 'auto' : 'smooth' });
+      setTimeout(() => { land(); if (done) done(); }, reduced ? 30 : 1150);
+      return;
+    }
+    curtain.classList.add('is-on');
+    setTimeout(() => {
+      if (lenis) lenis.scrollTo(y, { immediate: true, force: true });
+      else window.scrollTo(0, y);
+      land();
+      setTimeout(() => { curtain.classList.remove('is-on'); if (done) done(); }, 220);
+    }, 420);
   }
+  if (toTop) {
+    const focusTop = () => { const a = $('#header .brand') || $('#header a'); if (a) a.focus({ preventScroll: true }); };
+    toTop.addEventListener('click', () => goTo(0, focusTop));
+  }
+
+  /* ---------------------------------------------------------------------
+     "Acenda sua marca": leva direto para a cidade 3D e já acende
+     --------------------------------------------------------------------- */
+  $$('[data-ignite]').forEach((link) => {
+    link.addEventListener('click', (e) => {
+      if (!cityStageEl) return;
+      e.preventDefault();
+      const r = cityStageEl.getBoundingClientRect();
+      const cur = lenis ? lenis.scroll : window.scrollY;
+      const y = Math.max(0, cur + r.top - Math.max(12, (window.innerHeight - r.height) / 2));
+      goTo(y, () => {
+        // a cidade carrega sob demanda: espera ficar pronta e acende
+        let tries = 0;
+        const play = () => {
+          if (window.__city && window.__city.play) window.__city.play();
+          else if (tries++ < 60) setTimeout(play, 150);
+        };
+        play();
+      });
+    });
+  });
 
   /* ---------------------------------------------------------------------
      Rodapé: um míssil de luz cruza a logo da esquerda para a direita
