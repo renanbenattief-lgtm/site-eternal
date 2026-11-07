@@ -755,6 +755,28 @@
     });
   }
 
+  /* ---------------------------------------------------------------------
+     Cidade 3D ("Veja sua empresa acender no digital"): o arquivo pesado
+     só é baixado quando a seção está chegando
+     --------------------------------------------------------------------- */
+  const cityStage = $('#cityStage');
+  if (cityStage) {
+    const loadCity = () => {
+      if (window.EternalCity) { window.EternalCity.boot(); return; }
+      const sc = document.createElement('script');
+      sc.src = cityStage.dataset.src || 'assets/js/city.js';
+      sc.async = true;
+      sc.onerror = () => cityStage.classList.add('city--fallback');
+      document.body.appendChild(sc);
+    };
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver((es) => {
+        if (es.some((e) => e.isIntersecting)) { io.disconnect(); loadCity(); }
+      }, { rootMargin: '1200px 0px' });
+      io.observe(cityStage);
+    } else loadCity();
+  }
+
   // recalcula as cenas quando as fontes e imagens terminam de chegar
   window.addEventListener('load', () => hasGSAP && ScrollTrigger.refresh());
 })();

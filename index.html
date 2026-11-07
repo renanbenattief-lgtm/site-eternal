@@ -18,7 +18,7 @@
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
 <link rel="preload" href="assets/fonts/manrope-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/montserrat-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="assets/css/site.css?v=a83ce24b">
+<link rel="stylesheet" href="assets/css/site.css?v=86dd216c">
 <script>document.documentElement.classList.add('js');</script>
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"ProfessionalService","name":"ETERNAL","slogan":"Construindo sua presença no digital","url":"https://agenciaeternal.com.br/","description":"Agência de marketing especializada em posicionamento e presença digital.","telephone":"+55 69 99313-0318","sameAs":["https://www.instagram.com/agenciaeternal/"]}
@@ -233,6 +233,53 @@
     </div>
   </section>
 
+  <!-- 5b. SUA EMPRESA NO DIGITAL — cidade 3D interativa (carrega só quando chega perto) -->
+  <section class="section city" id="sua-empresa" aria-labelledby="city-titulo">
+    <div class="city__head">
+      <p class="label label--cyan"><span class="rule"></span>Simulação interativa</p>
+      <h2 class="statement statement--md" id="city-titulo" data-reveal><span class="line">Veja sua empresa</span> <span class="line dim">acender no digital<span class="dot">.</span></span></h2>
+      <p class="lead" data-reveal>Toda empresa já existe na cidade. O que muda é ser encontrada. Digite o nome da sua e veja ela ganhar presença no Instagram, no Facebook, no Google, no Maps, em vídeo, no site e no WhatsApp.</p>
+    </div>
+    <div class="city__wrap">
+      <div class="city__stage" id="cityStage" data-src="assets/js/city.js?v=286d8a14">
+        <canvas class="city__canvas" id="cityCanvas" role="img" aria-label="Cidade em 3D. Arraste para girar e clique nos painéis para ver cada canal."></canvas>
+        <img class="city__fallback" src="assets/img/city-fallback.jpg" alt="Simulação: prédio aceso na cidade, com painéis de Instagram, Facebook, Google e WhatsApp em volta" loading="lazy" width="1600" height="900">
+        <div class="city__loading" aria-hidden="true"><i></i><span>Carregando a cidade</span></div>
+        <div class="city__hud">
+          <span class="city__hint">Arraste para girar · clique nos painéis</span>
+          <div class="city__btns">
+            <button type="button" id="cityZoomIn" aria-label="Aproximar">+</button>
+            <button type="button" id="cityZoomOut" aria-label="Afastar">−</button>
+            <button type="button" id="cityReset" aria-label="Voltar para a visão inicial">↺</button>
+          </div>
+        </div>
+        <div class="city__info" id="cityInfo" hidden>
+          <button type="button" class="city__close" data-k="close" aria-label="Fechar">×</button>
+          <p class="label label--cyan" data-k="t">Instagram</p>
+          <p class="city__info-d" data-k="d"></p>
+          <a class="btn btn--solid btn--small" data-k="cta" href="https://wa.me/5569993130318" target="_blank" rel="noopener">Quero isso na minha empresa</a>
+        </div>
+      </div>
+      <form class="city__form" id="cityForm" autocomplete="off">
+        <div class="field"><label for="cityName">Nome da sua empresa</label><input id="cityName" name="cityName" type="text" maxlength="28" placeholder="Ex.: Clínica Aurora"></div>
+        <div class="field"><label for="citySeg">Segmento</label>
+          <select id="citySeg" name="citySeg">
+            <option value="industria">Indústria</option>
+            <option value="distribuidora">Distribuidora</option>
+            <option value="clinica">Clínica</option>
+            <option value="comercio">Comércio</option>
+            <option value="escritorio">Escritório</option>
+            <option value="restaurante">Restaurante</option>
+            <option value="servicos" selected>Prestador de serviço</option>
+          </select>
+        </div>
+        <button class="btn btn--solid" type="submit">Acender no digital</button>
+        <a class="city__cta" id="cityCta" href="https://wa.me/5569993130318" target="_blank" rel="noopener" hidden>Quero essa presença de verdade →</a>
+      </form>
+      <p class="sr-only" id="cityLive" aria-live="polite"></p>
+    </div>
+  </section>
+
   <!-- 6. VALORES -->
   <section class="section" id="valores" aria-labelledby="valores-titulo">
     <div class="values">
@@ -345,6 +392,6 @@
 <script src="assets/js/vendor/lenis.min.js?v=acddbf76"></script>
 <script src="assets/js/particles.js?v=a7727342"></script>
 <script src="assets/js/demo.js?v=415a3123"></script>
-<script src="assets/js/main.js?v=8860c285"></script>
+<script src="assets/js/main.js?v=e9535258"></script>
 </body>
 </html>
