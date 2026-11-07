@@ -7,12 +7,16 @@
 (function () {
   'use strict';
 
+  // pontos maiores e mais suaves = letras que parecem luz contínua, não areia
+  const POINT_MUL = 3.4;
+  const LOGO_ALPHA = 0.38;
+
   const VERT = `
     attribute vec3 aTarget;
     attribute vec4 aRand;
     attribute vec3 aColor;
     attribute float aKind;          // 0 = logo, 1 = poeira de fundo
-    uniform float uTime, uIntro, uScatter, uAspect, uFocal, uDist, uPoint, uDpr, uPulse;
+    uniform float uTime, uIntro, uScatter, uAspect, uFocal, uDist, uPoint, uDpr, uPulse, uLogoAlpha;
     uniform vec2 uMouse, uParallax, uFocus;
     uniform float uMouseOn;
     varying vec3 vColor;
@@ -69,10 +73,10 @@
       float pulse = smoothstep(0.08, 0.0, abs(target.x - (uPulse * 2.6 - 1.3))) * step(aKind, 0.5);
       vColor = aColor + pulse * vec3(0.35, 0.9, 0.95);
       float fadeNear = smoothstep(0.25, 0.9, z);
-      float twinkle = 0.85 + 0.15 * sin(uTime * 2.0 + r * 60.0);
+      float twinkle = 0.93 + 0.07 * sin(uTime * 2.0 + r * 60.0);
       vAlpha = (aKind < 0.5)
-        ? twinkle * fadeNear * (1.0 - smoothstep(0.9, 1.0, uScatter)) * smoothstep(0.0, 0.12, uIntro)
-        : (0.18 + 0.25 * r) * fadeNear * (1.0 - smoothstep(0.75, 1.0, uScatter));
+        ? uLogoAlpha * twinkle * fadeNear * (1.0 - smoothstep(0.9, 1.0, uScatter)) * smoothstep(0.0, 0.12, uIntro)
+        : (0.1 + 0.18 * r) * fadeNear * (1.0 - smoothstep(0.75, 1.0, uScatter));
     }`;
 
   const FRAG = `
@@ -122,8 +126,8 @@
     const pts = [], cols = [];
     for (let y = 0; y < ch; y += step) {
       for (let x = 0; x < cw; x += step) {
-        const jx = x + (Math.random() - 0.5) * step * 0.6;
-        const jy = y + (Math.random() - 0.5) * step * 0.6;
+        const jx = x + (Math.random() - 0.5) * step * 0.3;
+        const jy = y + (Math.random() - 0.5) * step * 0.3;
         const ix = Math.min(cw - 1, Math.max(0, Math.round(jx)));
         const iy = Math.min(ch - 1, Math.max(0, Math.round(jy)));
         const k = (iy * cw + ix) * 4;
@@ -134,7 +138,7 @@
         const lx = ((ix / SCALE - PAD) / W) * 2 - 1;
         const ly = -(((iy / SCALE - PAD) / W) * 2 - H / W);
         pts.push(lx, ly);
-        cols.push(isCyan ? [0.05, 1.25, 1.27] : [0.82, 0.86, 0.88]);
+        cols.push(isCyan ? [0.05, 1.25, 1.27] : [0.9, 0.93, 0.95]);
       }
     }
     return { pts, cols, step: step / SCALE / W * 2 };
@@ -156,11 +160,11 @@
       if (!gl) throw new Error('WebGL indisponível');
       this.gl = gl;
       const small = window.innerWidth < 760;
-      const count = this.opts.count || (small ? 7000 : 19000);
+      const count = this.opts.count || (small ? 7000 : Math.round(Math.min(28000, Math.max(19000, window.innerWidth * 13))));
       const { pts, cols, step } = await sampleLogo(svgText, count);
       this.step = step;
       const n = pts.length / 2;
-      const dust = small ? 500 : 1400;
+      const dust = small ? 220 : 600;
       const total = n + dust;
       const aTarget = new Float32Array(total * 3);
       const aRand = new Float32Array(total * 4);
@@ -205,7 +209,7 @@
       buf(aTarget, 'aTarget', 3); buf(aRand, 'aRand', 4); buf(aColor, 'aColor', 3); buf(aKind, 'aKind', 1);
       this.count = total;
       this.u = {};
-      ['uTime', 'uIntro', 'uScatter', 'uAspect', 'uFocal', 'uDist', 'uPoint', 'uDpr', 'uMouse', 'uMouseOn', 'uParallax', 'uPulse', 'uFocus']
+      ['uTime', 'uIntro', 'uScatter', 'uAspect', 'uFocal', 'uDist', 'uPoint', 'uDpr', 'uMouse', 'uMouseOn', 'uParallax', 'uPulse', 'uFocus', 'uLogoAlpha']
         .forEach((k) => (this.u[k] = gl.getUniformLocation(prog, k)));
       gl.disable(gl.DEPTH_TEST);
       gl.enable(gl.BLEND);
@@ -233,7 +237,7 @@
       this.focal = frac * this.dist;
       // tamanho do ponto proporcional ao espaçamento da amostragem na tela
       const spacingPx = this.step * 0.5 * frac * w;
-      this.point = Math.max(1.6, spacingPx * 1.75);
+      this.point = Math.max(1.6, spacingPx * POINT_MUL);
     }
 
     pointer(e) {
@@ -279,6 +283,7 @@
       gl.uniform1f(u.uPulse, pulse);
       // centro do traço ciano do R, nas coordenadas da logo (x de -1 a 1)
       gl.uniform2f(u.uFocus, -0.048, -0.059);
+      gl.uniform1f(u.uLogoAlpha, LOGO_ALPHA);
       gl.drawArrays(gl.POINTS, 0, this.count);
       this._raf = requestAnimationFrame((n) => this.frame(n));
     }
