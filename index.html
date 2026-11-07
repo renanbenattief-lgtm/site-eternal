@@ -18,7 +18,7 @@
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
 <link rel="preload" href="assets/fonts/manrope-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/montserrat-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="assets/css/site.css?v=fb831f97">
+<link rel="stylesheet" href="assets/css/site.css?v=5b3a110a">
 <script>document.documentElement.classList.add('js');</script>
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"ProfessionalService","name":"ETERNAL","slogan":"Construindo sua presença no digital","url":"https://agenciaeternal.com.br/","description":"Agência de marketing especializada em posicionamento e presença digital.","telephone":"+55 69 99313-0318","sameAs":["https://www.instagram.com/agenciaeternal/"]}
@@ -380,7 +380,28 @@
 </main>
 
 <footer class="footer">
-  <svg class="footer__logo" viewBox="0 0 1340 127" role="img" aria-label="ETERNAL"><use href="#logo"></use></svg>
+  <!-- a logo surge com um "míssil" de luz que cruza da esquerda para a direita e vai preenchendo as letras -->
+  <svg class="footer__logo" id="footLogo" viewBox="0 0 1340 127" role="img" aria-label="ETERNAL">
+    <defs>
+      <path id="flW" vector-effect="non-scaling-stroke" d="M0,0 L95,0 L95,16 L16,16 L16,43 L0,43 Z M0,56 L70,56 L70,72 L16,72 L16,111 L95,111 L95,127 L0,127 Z M205,0 L315,0 L315,16 L268,16 L268,127 L252,127 L252,16 L205,16 Z M417,0 L512,0 L512,16 L433,16 L433,43 L417,43 Z M417,56 L487,56 L487,72 L433,72 L433,111 L512,111 L512,127 L417,127 Z M604,0 L678,0 C696.77,0 712,17.92 712,40 C712,62.08 696.77,80 678,80 L678.16,80 L712,127 L691.92,127 L648,66 L676,66 C686.49,66 695,54.8 695,41 C695,27.2 686.49,16 676,16 L621,16 L621,24.29 Z M815,0 L831,0 L917,100 L917,0 L933,0 L933,127 L917,127 L831,27 L831,127 L815,127 Z M1080.5,0 L1096.5,0 L1155,127 L1136,127 L1088.5,22 L1041,127 L1022,127 Z M1250,0 L1267,0 L1267,111 L1340,111 L1340,127 L1250,127 Z"/>
+      <path id="flA" vector-effect="non-scaling-stroke" d="M621,67.28 L664,127 L647,127 L621,90.89 Z"/>
+      <clipPath id="flClip" clipPathUnits="userSpaceOnUse"><rect id="flClipRect" x="-400" y="-60" width="2400" height="247"/></clipPath>
+      <linearGradient id="flRamp" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="0.82" stop-color="#fff" stop-opacity="0.85"/><stop offset="1" stop-color="#fff" stop-opacity="1"/></linearGradient>
+      <mask id="flHotMask" maskUnits="userSpaceOnUse" x="-900" y="-100" width="3200" height="327"><rect id="flHotRect" x="-900" y="-100" width="180" height="327" fill="url(#flRamp)"/></mask>
+      <linearGradient id="flTrail" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#09EFF1" stop-opacity="0"/><stop offset="0.72" stop-color="#09EFF1" stop-opacity="0.55"/><stop offset="1" stop-color="#F2FFFF" stop-opacity="1"/></linearGradient>
+      <filter id="flBlur" x="-50%" y="-400%" width="200%" height="900%"><feGaussianBlur stdDeviation="5"/></filter>
+    </defs>
+    <g class="fl-ghost"><use href="#flW"/><use href="#flA"/></g>
+    <g clip-path="url(#flClip)"><use href="#flW" fill="currentColor"/><use href="#flA" fill="#09EFF1"/></g>
+    <g class="fl-hot" mask="url(#flHotMask)"><use href="#flW"/><use href="#flA"/></g>
+    <g id="flSparks"></g>
+    <g id="flMissile" class="fl-missile" transform="translate(-900 0)">
+      <rect x="-440" y="56.5" width="440" height="14" rx="7" fill="url(#flTrail)" filter="url(#flBlur)" opacity="0.9"/>
+      <rect x="-440" y="61.8" width="440" height="3.4" rx="1.7" fill="url(#flTrail)"/>
+      <ellipse cx="-4" cy="63.5" rx="32" ry="12" fill="#7FF6F8" filter="url(#flBlur)"/>
+      <ellipse cx="-3" cy="63.5" rx="14" ry="4.8" fill="#FFFFFF"/>
+    </g>
+  </svg>
   <div class="footer__row">
     <p>Construindo sua presença no digital. © 2026 ETERNAL.</p>
     <div class="footer__links">
@@ -393,6 +414,15 @@
 <a class="wa-float" id="waFloat" href="https://wa.me/5569993130318?text=Ol%C3%A1%2C%20ETERNAL!%20Quero%20conversar%20sobre%20a%20presen%C3%A7a%20digital%20da%20minha%20empresa." target="_blank" rel="noopener" aria-label="Conversar no WhatsApp">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v7a2.5 2.5 0 0 1-2.5 2.5H11l-4.5 3.8V16h0A2.5 2.5 0 0 1 4 13.5z"/><path d="M8.6 10h.01M12 10h.01M15.4 10h.01" stroke-width="2.6"/></svg>
 </a>
+
+<!-- som e voltar ao topo, sempre à mão depois que a pessoa desce a página -->
+<button class="float-btn sound-float" id="soundFloat" type="button" aria-pressed="false" aria-label="Ligar o som ambiente" data-tip="Ligar o som">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.8 9.4h3.4L12 5.4v13.2l-4.8-4H3.8z"/><g class="sf-on"><path d="M15.6 9.1a4.1 4.1 0 0 1 0 5.8"/><path d="M18.3 6.5a7.8 7.8 0 0 1 0 11"/></g><g class="sf-off"><path d="M16.2 9.6l4.6 4.6M20.8 9.6l-4.6 4.6"/></g></svg>
+</button>
+<button class="float-btn to-top" id="toTop" type="button" aria-label="Voltar ao topo do site" data-tip="Voltar ao topo">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5.5M5.8 11.7L12 5.5l6.2 6.2"/></svg>
+</button>
+<div class="curtain" id="curtain" aria-hidden="true"><i></i></div>
 
 <div class="grain" aria-hidden="true"></div>
 <div class="progress" aria-hidden="true"><i id="progressBar"></i></div>
@@ -413,6 +443,6 @@
 <script src="assets/js/vendor/lenis.min.js?v=acddbf76"></script>
 <script src="assets/js/particles.js?v=a7727342"></script>
 <script src="assets/js/demo.js?v=415a3123"></script>
-<script src="assets/js/main.js?v=46bcb273"></script>
+<script src="assets/js/main.js?v=21036bfa"></script>
 </body>
 </html>

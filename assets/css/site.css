@@ -507,12 +507,22 @@ fieldset.field { border: 0; margin: 0; padding: 0; min-width: 0; }
 .form__done a { color: var(--cyan); text-decoration: underline; text-underline-offset: 3px; }
 
 .footer {
-  padding-top: 70px; padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px));
+  padding-top: 70px; padding-bottom: calc(150px + env(safe-area-inset-bottom, 0px)); /* espaço para os botões flutuantes */
   padding-left: max(var(--gutter), env(safe-area-inset-left, 0px));
   padding-right: max(var(--gutter), env(safe-area-inset-right, 0px));
   border-top: 1px solid var(--line); display: grid; gap: 40px;
 }
-.footer__logo { width: min(100%, 1340px); opacity: 0.95; }
+.footer__logo { width: min(100%, 1340px); opacity: 0.95; overflow: visible; }
+/* logo do rodapé: contorno apagado → o míssil de luz passa e preenche */
+.fl-ghost use { fill: none; stroke: rgba(242, 245, 246, 0.2); stroke-width: 1px; }
+.fl-hot use { fill: #C9FDFE; }
+.fl-missile { opacity: 0; }
+.footer__logo.is-done { animation: flHit 1.3s ease-out; }
+@keyframes flHit {
+  0% { filter: brightness(1.45) drop-shadow(0 0 0 rgba(9, 239, 241, 0)); }
+  25% { filter: brightness(1.15) drop-shadow(0 0 22px rgba(9, 239, 241, 0.5)); }
+  100% { filter: brightness(1) drop-shadow(0 0 0 rgba(9, 239, 241, 0)); }
+}
 .footer__row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 18px 40px; align-items: center; }
 .footer__row p { margin: 0; color: var(--muted); font-size: 0.85rem; }
 .footer__links { display: flex; flex-wrap: wrap; gap: 14px 28px; }
@@ -692,6 +702,51 @@ fieldset.field { border: 0; margin: 0; padding: 0; min-width: 0; }
 }
 .wa-float.is-on { transform: scale(1); }
 .wa-float svg { width: 26px; height: 26px; }
+
+/* botões flutuantes: som (esquerda) e voltar ao topo (direita, acima do WhatsApp) */
+.float-btn {
+  position: fixed; z-index: 45; width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center;
+  color: var(--fg); background: rgba(5, 8, 10, 0.74); border: 1px solid var(--line);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  opacity: 0; transform: translateY(12px) scale(0.9); pointer-events: none;
+  transition: opacity 0.4s, transform 0.5s var(--ease-out), border-color 0.25s, color 0.25s, bottom 0.5s var(--ease-out);
+}
+.float-btn.is-shown { opacity: 1; transform: none; pointer-events: auto; }
+.float-btn:hover, .float-btn:focus-visible { border-color: var(--cyan); color: var(--cyan); }
+.float-btn svg { width: 20px; height: 20px; }
+.float-btn[data-tip]::after {
+  content: attr(data-tip); position: absolute; top: 50%; transform: translateY(-50%); white-space: nowrap; pointer-events: none;
+  font-family: var(--font-wide); font-size: 0.56rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--fg);
+  background: rgba(5, 8, 10, 0.88); border: 1px solid var(--line); border-radius: 999px; padding: 8px 13px;
+  opacity: 0; transition: opacity 0.25s;
+}
+@media (hover: hover) { .float-btn:hover::after, .float-btn:focus-visible::after { opacity: 1; } }
+.sound-float { left: max(18px, calc(env(safe-area-inset-left, 0px) + 12px)); bottom: max(18px, calc(env(safe-area-inset-bottom, 0px) + 12px)); }
+.sound-float::after { left: calc(100% + 10px); }
+.sound-float .sf-on { display: none; }
+.sound-float.is-on { color: var(--cyan); border-color: rgba(9, 239, 241, 0.55); }
+.sound-float.is-on .sf-on { display: inline; }
+.sound-float.is-on .sf-off { display: none; }
+.sound-float.is-on::before {
+  content: ""; position: absolute; inset: -1px; border-radius: 50%; border: 1px solid var(--cyan);
+  animation: sfPulse 2.2s ease-out infinite; pointer-events: none;
+}
+@keyframes sfPulse { from { transform: scale(1); opacity: 0.6; } to { transform: scale(1.55); opacity: 0; } }
+.to-top { right: max(23px, calc(env(safe-area-inset-right, 0px) + 17px)); bottom: max(18px, calc(env(safe-area-inset-bottom, 0px) + 12px)); }
+.to-top.is-high { bottom: max(86px, calc(env(safe-area-inset-bottom, 0px) + 80px)); }
+.to-top::after { right: calc(100% + 10px); }
+
+/* cortina rápida ao voltar ao topo (evita passar a jornada inteira em alta velocidade) */
+.curtain {
+  position: fixed; inset: 0; z-index: 85; display: grid; place-items: center; background: var(--void);
+  opacity: 0; pointer-events: none; transition: opacity 0.38s ease;
+}
+.curtain.is-on { opacity: 1; pointer-events: auto; }
+.curtain i {
+  width: 3px; height: 70px; border-radius: 2px; background: var(--cyan); box-shadow: 0 0 22px var(--cyan);
+  transform: rotate(-35deg) scaleY(0); transition: transform 0.45s var(--ease-out);
+}
+.curtain.is-on i { transform: rotate(-35deg) scaleY(1); }
 
 /* ---------- responsivo ---------- */
 @media (max-width: 900px) {

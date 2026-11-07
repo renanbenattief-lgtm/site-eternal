@@ -410,10 +410,6 @@
       y: 60, opacity: 0, duration: 1.4, ease: 'expo.out',
       scrollTrigger: { trigger: '#contato', start: 'top 70%' },
     });
-    gsap.from('.footer__logo', {
-      yPercent: 40, opacity: 0, duration: 1.6, ease: 'expo.out',
-      scrollTrigger: { trigger: '.footer', start: 'top 95%' },
-    });
 
     /* ---------------- valores: o marcador acende ---------------- */
     $$('.value').forEach((el) => {
@@ -552,6 +548,8 @@
   const header = $('#header');
   const progress = $('#progressBar');
   const waFloat = $('#waFloat');
+  const soundFloat = $('#soundFloat');
+  const toTop = $('#toTop');
   const contact = $('#contato');
   let lastY = 0;
   let contactInView = false;
@@ -578,6 +576,12 @@
     progress.style.setProperty('--p', max > 0 ? (y / max).toFixed(4) : 0);
     const jEnd = window.__journeyST ? window.__journeyST.end : vh * 1.3;
     waFloat.classList.toggle('is-on', y > jEnd + vh * 0.3 && !contactInView && !cityFormInView);
+    // som e "voltar ao topo" aparecem depois que a pessoa desce (no celular, saem da frente do formulário da cidade)
+    if (soundFloat) soundFloat.classList.toggle('is-shown', y > vh * 1.2 && !cityFormInView);
+    if (toTop) {
+      toTop.classList.toggle('is-shown', y > vh * 2 && !cityFormInView);
+      toTop.classList.toggle('is-high', waFloat.classList.contains('is-on'));
+    }
   }
   if (lenis) lenis.on('scroll', (e) => onScroll(e.scroll));
   else window.addEventListener('scroll', () => onScroll(window.scrollY), { passive: true });
@@ -670,7 +674,7 @@
       return loading;
     };
     // efeitos curtos (o raio da cidade 3D): só tocam com o som ligado, sem passar pelo abafador
-    const SFX = { surge: 'assets/media/surge.mp3' };
+    const SFX = { surge: 'assets/media/surge.mp3', whoosh: 'assets/media/whoosh.mp3' };
     const sfxBuf = {};
     const loadSfx = (name) => {
       if (!sfxBuf[name]) {
@@ -694,17 +698,24 @@
         src.start();
       }).catch(() => {});
     };
+    const soundFloatBtn = $('#soundFloat');
     const setUI = () => {
-      soundBtn.classList.toggle('is-on', on);
-      soundBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
-      soundBtn.setAttribute('aria-label', on ? 'Desligar o som ambiente' : 'Ligar o som ambiente');
+      [soundBtn, soundFloatBtn].forEach((b) => {
+        if (!b) return;
+        b.classList.toggle('is-on', on);
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+        b.setAttribute('aria-label', on ? 'Desligar o som ambiente' : 'Ligar o som ambiente');
+      });
+      if (soundFloatBtn) soundFloatBtn.dataset.tip = on ? 'Desligar o som' : 'Ligar o som';
     };
+    if (soundFloatBtn) soundFloatBtn.addEventListener('click', () => soundBtn.click());
     soundBtn.addEventListener('click', () => {
       on = !on;
       setUI();
       if (on) {
         const ready = prepare();
         loadSfx('surge').catch(() => {});
+        loadSfx('whoosh').catch(() => {});
         ready.then((buffer) => {
           if (!on) return;
           if (!started) {
@@ -733,6 +744,118 @@
       if (!ac || !on) return;
       if (document.hidden) ac.suspend(); else ac.resume();
     });
+  }
+
+  /* ---------------------------------------------------------------------
+     Voltar ao topo: cortina rápida, pula para o início e abre de novo
+     (passar a jornada inteira rolando em alta velocidade ficaria pesado)
+     --------------------------------------------------------------------- */
+  if (toTop) {
+    const curtain = $('#curtain');
+    const jumpTop = () => {
+      if (lenis) lenis.scrollTo(0, { immediate: true, force: true });
+      else window.scrollTo(0, 0);
+      onScroll(0);
+      if (window.ScrollTrigger) window.ScrollTrigger.update();
+    };
+    const focusTop = () => { const a = $('#header .brand') || $('#header a'); if (a) a.focus({ preventScroll: true }); };
+    toTop.addEventListener('click', () => {
+      if (reduced || !curtain) { jumpTop(); focusTop(); return; }
+      curtain.classList.add('is-on');
+      setTimeout(() => {
+        jumpTop();
+        setTimeout(() => { curtain.classList.remove('is-on'); focusTop(); }, 220);
+      }, 420);
+    });
+  }
+
+  /* ---------------------------------------------------------------------
+     Rodapé: um míssil de luz cruza a logo da esquerda para a direita
+     e vai preenchendo as letras por onde passa
+     --------------------------------------------------------------------- */
+  const footLogo = $('#footLogo');
+  if (footLogo) {
+    const clipRect = $('#flClipRect');
+    const hotRect = $('#flHotRect');
+    const missile = $('#flMissile');
+    const sparksG = $('#flSparks');
+    const FULL = 2400;
+    const START = -170;
+    const END = 1340 + 560;
+    const DUR = 1350;
+    const ease = (t) => 0.16 * t + 0.84 * t * t; // acelera como um míssil
+    const fillTo = (x) => clipRect.setAttribute('width', Math.max(0, x + 400).toFixed(1));
+    const ghost = () => {
+      fillTo(-400); hotRect.setAttribute('x', '-900');
+      missile.setAttribute('transform', 'translate(-900 0)'); missile.style.opacity = '0';
+      footLogo.classList.remove('is-done');
+    };
+    const done = () => {
+      fillTo(FULL); hotRect.setAttribute('x', '-900'); missile.style.opacity = '0';
+      footLogo.classList.remove('is-done'); void footLogo.getBoundingClientRect(); footLogo.classList.add('is-done');
+    };
+    if (reduced || !('IntersectionObserver' in window)) fillTo(FULL);
+    else {
+      ghost();
+      const NS = 'http://www.w3.org/2000/svg';
+      const sparks = Array.from({ length: 26 }, () => {
+        const el = document.createElementNS(NS, 'circle');
+        el.setAttribute('fill', '#BFFCFD'); el.setAttribute('r', '2'); el.style.opacity = '0';
+        sparksG.appendChild(el);
+        return { el, life: 0, x: 0, y: 0, vx: 0, vy: 0 };
+      });
+      let running = false;
+      let t0 = 0;
+      let last = 0;
+      // desenha o instante t (0 a 1) do voo; dt move as faíscas
+      const render = (t, dt) => {
+        const x = START + (END - START) * ease(t);
+        missile.setAttribute('transform', `translate(${x.toFixed(1)} 0)`);
+        missile.style.opacity = String(Math.min(1, t / 0.05));
+        fillTo(Math.min(x, FULL));
+        hotRect.setAttribute('x', (x - 180).toFixed(1));
+        // faíscas soltas pela cauda
+        if (t < 1 && x > -60 && x < 1420) {
+          for (let k = 0; k < 2; k++) {
+            const s = sparks.find((p) => p.life <= 0);
+            if (!s) break;
+            s.life = 0.35 + Math.random() * 0.2;
+            s.x = x - 10 - Math.random() * 30; s.y = 63.5 + (Math.random() - 0.5) * 16;
+            s.vx = -(90 + Math.random() * 240); s.vy = (Math.random() - 0.5) * 90;
+            s.el.setAttribute('r', (1.4 + Math.random() * 2.2).toFixed(1));
+          }
+        }
+        sparks.forEach((s) => {
+          if (s.life <= 0) { s.el.style.opacity = '0'; return; }
+          s.life -= dt; s.x += s.vx * dt; s.y += s.vy * dt;
+          s.el.setAttribute('cx', s.x.toFixed(1)); s.el.setAttribute('cy', s.y.toFixed(1));
+          s.el.style.opacity = Math.max(0, Math.min(1, s.life / 0.3)).toFixed(2);
+        });
+      };
+      const frame = (now) => {
+        const t = Math.min(1, (now - t0) / DUR);
+        const dt = Math.min(0.05, (now - last) / 1000);
+        last = now;
+        render(t, dt);
+        if (t < 1 || sparks.some((s) => s.life > 0)) requestAnimationFrame(frame);
+        else { running = false; done(); }
+      };
+      // para testes: mostra um instante exato do voo
+      window.__footMissile = { seek: (t) => { for (let i = 0; i < 12; i++) render(Math.max(0, t - (11 - i) * 0.012), 1 / 60); } };
+      const launch = () => {
+        if (running) return;
+        running = true;
+        footLogo.classList.remove('is-done');
+        if (window.__sfx) window.__sfx('whoosh');
+        t0 = last = performance.now();
+        requestAnimationFrame(frame);
+      };
+      // dispara quando a logo aparece bem na tela; se a pessoa sair e voltar, dispara de novo
+      new IntersectionObserver((entries) => entries.forEach((e) => {
+        if (e.intersectionRatio >= 0.6) launch();
+        else if (!e.isIntersecting && !running) ghost();
+      }), { threshold: [0, 0.6] }).observe(footLogo);
+    }
   }
 
   /* ---------------------------------------------------------------------
