@@ -632,9 +632,12 @@
       let y;
       if (id === '#metodo' && window.__journeyAt) y = window.__journeyAt(0.5);
       else if (id === '#inicio') y = 0;
-      else y = el.getBoundingClientRect().top + window.scrollY;
-      if (lenis) lenis.scrollTo(y, { duration: 1.8 });
-      else window.scrollTo({ top: y, behavior: reduced ? 'auto' : 'smooth' });
+      else y = el.getBoundingClientRect().top + (lenis ? lenis.scroll : window.scrollY);
+      // menu vai direto para a seção: em pulos longos, cortina rápida em vez de rolar por todos os efeitos
+      goTo(y, () => {
+        if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '-1');
+        el.focus({ preventScroll: true });
+      });
     });
   });
 
@@ -798,7 +801,8 @@
       if (lenis) lenis.scrollTo(y, { immediate: true, force: true });
       else window.scrollTo(0, y);
       land();
-      setTimeout(() => { curtain.classList.remove('is-on'); if (done) done(); }, 220);
+      // segura um instante para o vídeo da jornada assentar no quadro certo
+      setTimeout(() => { curtain.classList.remove('is-on'); if (done) done(); }, 320);
     }, 420);
   }
   if (toTop) {
