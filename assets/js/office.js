@@ -617,13 +617,78 @@
     $$('.o-room__label').forEach((l) => {
       ScrollTrigger.create({ trigger: l.closest('.o-room'), start: 'top top', onEnter: () => scramble(l) });
     });
+
+    // onde estamos: o mapa acende e o pino cai no endereço
+    const mapSec = $('#onde-estamos');
+    if (mapSec) {
+      ScrollTrigger.create({
+        trigger: mapSec, start: 'top 62%',
+        onEnter: () => { mapSec.classList.add('is-on'); sfx('lights', 0.35); },
+        onLeaveBack: () => mapSec.classList.remove('is-on'),
+      });
+      gsap.from('.o-map__card > *', {
+        y: 40, opacity: 0, duration: 1.2, ease: 'expo.out', stagger: 0.1,
+        scrollTrigger: { trigger: mapSec, start: 'top 68%' },
+      });
+      const mLabel = $('.o-map__card .label');
+      ScrollTrigger.create({ trigger: mapSec, start: 'top 68%', onEnter: () => mLabel && scramble(mLabel) });
+    }
   } else {
     heroDark.style.opacity = '0';
     $('#visita').classList.add('is-lit');
+    if ($('#onde-estamos')) $('#onde-estamos').classList.add('is-on');
     rooms.forEach((r) => { r.el.classList.add('is-lit'); });
   }
 
   window.addEventListener('resize', () => { Lines.size(); });
+
+  /* ---------------------------------------------------------------------
+     Mapa (Google Maps em modo escuro): só entra quando a seção se aproxima.
+     Fica parado (não rouba a rolagem); clicar abre o Google Maps.
+     Na prévia, que não permite mapas de fora, fica só o desenho com o pino.
+     --------------------------------------------------------------------- */
+  const mapFrame = $('#mapFrame');
+  if (mapFrame) {
+    const host = window.location.hostname;
+    const canEmbed = /(^|\.)agenciaeternal\.com\.br$|\.vercel\.app$|^localhost$|^127\.0\.0\.1$/.test(host);
+    const mountMap = () => {
+      if (!canEmbed || mapFrame.querySelector('iframe')) return;
+      const f = document.createElement('iframe');
+      f.src = mapFrame.dataset.embed;
+      f.title = 'Mapa com a localização do escritório da ETERNAL';
+      f.loading = 'lazy';
+      f.referrerPolicy = 'no-referrer-when-downgrade';
+      f.tabIndex = -1;
+      f.setAttribute('aria-hidden', 'true');
+      f.addEventListener('load', () => mapFrame.classList.add('has-map'), { once: true });
+      mapFrame.insertBefore(f, $('.o-map__dim', mapFrame));
+    };
+    if ('IntersectionObserver' in window) {
+      const mio = new IntersectionObserver((es) => {
+        if (es.some((e) => e.isIntersecting)) { mio.disconnect(); mountMap(); }
+      }, { rootMargin: '900px 0px' });
+      mio.observe(mapFrame);
+    } else mountMap();
+  }
+  // copiar o endereço
+  $$('.o-map__copy').forEach((b) => {
+    b.addEventListener('click', async () => {
+      const text = b.dataset.copy;
+      let ok = false;
+      try { await navigator.clipboard.writeText(text); ok = true; } catch (e) {
+        const ta = document.createElement('textarea');
+        ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        try { ok = document.execCommand('copy'); } catch (e2) { ok = false; }
+        ta.remove();
+      }
+      const lab = $('span', b) || b;
+      const old = lab.textContent;
+      lab.textContent = ok ? 'Copiado ✓' : 'Selecione e copie';
+      b.classList.toggle('is-done', ok);
+      setTimeout(() => { lab.textContent = old; b.classList.remove('is-done'); }, 1800);
+    });
+  });
 
   /* ---------------------------------------------------------------------
      Rótulos: as letras se decodificam quando entram em cena
@@ -753,10 +818,15 @@
     io.observe($('.o-gallery__stage'));
   }
   if ('IntersectionObserver' in window && visitEl) {
-    new IntersectionObserver((es) => es.forEach((e) => {
-      visitInView = e.isIntersecting;
+    // na visita e no mapa o WhatsApp flutuante sai (os botões de lá já levam ao WhatsApp/mapa)
+    const vs = new Set();
+    const vio = new IntersectionObserver((es) => es.forEach((e) => {
+      if (e.isIntersecting) vs.add(e.target); else vs.delete(e.target);
+      visitInView = vs.size > 0;
       onScroll(lenis ? lenis.scroll : window.scrollY);
-    }), { threshold: 0.05 }).observe(visitEl);
+    }), { threshold: 0.05 });
+    vio.observe(visitEl);
+    if ($('#onde-estamos')) vio.observe($('#onde-estamos'));
   }
   function onScroll(y) {
     const vh = window.innerHeight;
