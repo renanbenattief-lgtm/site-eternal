@@ -187,6 +187,7 @@
     if (lenis) lenis.start();
     if (hasGSAP) ScrollTrigger.refresh();
     intro();
+    if (window.__jumpToHash) window.__jumpToHash();
     // o resto das cenas carrega em sequência, sem pesar a primeira
     if (!reduced) {
       scenes.slice(1).reduce((p, s) => p.then(() => loadScene(s)), Promise.resolve());
@@ -622,24 +623,32 @@
   /* ---------------------------------------------------------------------
      Âncoras do menu (respeitando as cenas presas)
      --------------------------------------------------------------------- */
+  function jumpToId(id) {
+    const el = id && id.length > 1 ? $(id) : null;
+    if (!el) return false;
+    let y;
+    if (id === '#metodo' && window.__journeyAt) y = window.__journeyAt(0.5);
+    else if (id === '#inicio') y = 0;
+    else y = el.getBoundingClientRect().top + (lenis ? lenis.scroll : window.scrollY);
+    // menu vai direto para a seção: em pulos longos, cortina rápida em vez de rolar por todos os efeitos
+    goTo(y, () => {
+      if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '-1');
+      el.focus({ preventScroll: true });
+    });
+    return true;
+  }
   $$('a[href^="#"]:not([data-ignite])').forEach((a) => {
     a.addEventListener('click', (e) => {
-      const id = a.getAttribute('href');
-      if (id.length < 2) return;
-      const el = $(id);
-      if (!el) return;
-      e.preventDefault();
-      let y;
-      if (id === '#metodo' && window.__journeyAt) y = window.__journeyAt(0.5);
-      else if (id === '#inicio') y = 0;
-      else y = el.getBoundingClientRect().top + (lenis ? lenis.scroll : window.scrollY);
-      // menu vai direto para a seção: em pulos longos, cortina rápida em vez de rolar por todos os efeitos
-      goTo(y, () => {
-        if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '-1');
-        el.focus({ preventScroll: true });
-      });
+      if (jumpToId(a.getAttribute('href'))) e.preventDefault();
     });
   });
+  // chegou de outra página com #secao (ex.: menu da página do escritório): pula depois de abrir
+  window.__jumpToHash = () => {
+    const id = window.location.hash;
+    if (!id || id.length < 2 || id === '#inicio') return;
+    try { if (!$(id)) return; } catch (e) { return; }
+    setTimeout(() => jumpToId(id), reduced ? 0 : 700);
+  };
 
   /* ---------------------------------------------------------------------
      Cursor próprio e botões magnéticos

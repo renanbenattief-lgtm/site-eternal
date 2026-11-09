@@ -195,6 +195,11 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .nav__ignite svg, .ignite-float svg { width: 14px; height: 14px; flex: none; filter: drop-shadow(0 0 5px rgba(9, 239, 241, 0.9)); animation: spark 2.4s ease-in-out infinite; }
 @keyframes spark { 0%, 100% { opacity: 1; } 45% { opacity: 0.45; } 50% { opacity: 1; } 55% { opacity: 0.6; } }
 @media (min-width: 1200px) { .nav a.nav__ignite { display: inline-flex; } }
+/* página do escritório (no celular vira um ícone redondo) */
+.nav a.nav__office { display: inline-flex; align-items: center; gap: 9px; }
+.nav__office svg { width: 15px; height: 15px; flex: none; margin-top: -2px; }
+.nav a.nav__office[aria-current="page"] { color: var(--cyan); }
+.nav a.nav__office[aria-current="page"]::after { transform: scaleX(1); }
 
 /* som ambiente (desligado por padrão) */
 .sound {
@@ -217,7 +222,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   display: inline-flex; align-items: center; gap: 12px; height: var(--h); padding: 0 22px;
   border: 1px solid rgba(9, 239, 241, 0.55); border-radius: 999px;
   font-family: var(--font-wide); font-weight: 500; font-size: 0.72rem; letter-spacing: 0.26em; text-transform: uppercase;
-  color: var(--fg); position: relative; overflow: hidden; isolation: isolate;
+  color: var(--fg); position: relative; overflow: hidden; isolation: isolate; white-space: nowrap;
   transition: color 0.4s, border-color 0.4s;
 }
 .btn::before {
@@ -852,6 +857,7 @@ fieldset.field { border: 0; margin: 0; padding: 0; min-width: 0; }
 /* ---------- responsivo ---------- */
 @media (max-width: 900px) {
   .nav a.nav__link { display: none; }
+  .nav a.nav__link.nav__office { display: inline-flex; }
   .method { grid-template-columns: minmax(0, 1fr); align-content: end; padding-bottom: 9vh; gap: 22px; }
   .method__steps { justify-self: start; width: 100%; }
   .step { padding: 8px 0; }
@@ -871,7 +877,18 @@ fieldset.field { border: 0; margin: 0; padding: 0; min-width: 0; }
   .brand { width: 104px; }
   .btn--small { padding: 0 14px; letter-spacing: 0.2em; }
   .sound__label { display: none; }
+  .nav a.nav__office { width: 40px; height: 40px; justify-content: center; padding: 0; border: 1px solid rgba(242, 245, 246, 0.2); border-radius: 50%; }
+  .nav a.nav__office span { display: none; }
+  .nav a.nav__office::after { display: none; }
+  .nav a.nav__office[aria-current="page"] { border-color: rgba(9, 239, 241, 0.6); }
+  .nav__office svg { margin-top: 0; width: 17px; height: 17px; }
   .form .btn { letter-spacing: 0.16em; padding: 0 16px; }
+}
+@media (max-width: 400px) {
+  .site-header { gap: 8px; }
+  .nav { gap: 9px; }
+  .brand { width: 90px; }
+  .site-header .btn--small { padding: 0 12px; letter-spacing: 0.16em; }
 }
 
 /* ---------- movimento reduzido: tudo visível, sem cenas presas ---------- */
