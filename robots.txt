@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+Disallow: /r/
+Disallow: /relatorio
 
 Sitemap: https://agenciaeternal.com.br/sitemap.xml

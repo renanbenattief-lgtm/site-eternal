@@ -1,0 +1,13 @@
+
+/* Layout: control-room console — dark navy canvas, glowing panels on a 12-column grid, client brand color as the signal hue. Deliberately dark-only. */
+:root{
+  --bg:#070B14; --panel:#0D1424; --panel2:#121B2E; --line:rgba(148,163,184,.14); --line2:rgba(148,163,184,.26);
+  --ink:#E7EDF7; --muted:#8E9BB4; --faint:#5F6C86;
+  --accent:#22D3EE; --accent-ink:#04121A;
+  --good:#34D399; --bad:#F87171; --warn:#FBBF24; --info:#818CF8;
+  --f-display:"Sora","Segoe UI",system-ui,sans-serif;
+  --f-body:"DM Sans","Segoe UI",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  --r:14px;
+  color-scheme:dark;
+}
