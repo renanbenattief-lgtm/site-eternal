@@ -13,6 +13,14 @@ body.st-open{overflow:hidden}
 .rl-msg h1{font-family:var(--f-display);font-size:22px;margin:0}
 .rl-msg p{color:var(--muted);margin:0}
 .rl-bar{max-width:1320px;margin:0 auto;padding:16px 16px 0;display:flex;justify-content:flex-end}
+.rl-bar{gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.rl-per{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.rl-pl{font:600 11px var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-right:4px}
+.rl-chip{font:600 13px var(--f-body);color:var(--ink);background:transparent;border:1px solid var(--line2);border-radius:999px;padding:7px 13px;cursor:pointer}
+.rl-chip[aria-pressed="true"]{background:var(--br,var(--accent));border-color:var(--br,var(--accent));color:#06101A}
+.rl-chip:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.rl-note{max-width:1320px;margin:10px auto 0;padding:0 16px;font-size:13.5px;color:var(--muted)}
+.rl-note[hidden]{display:none}
 .rl-replay{font:600 13px var(--f-body);color:var(--ink);background:var(--panel);border:1px solid var(--line2);border-radius:999px;padding:9px 16px;cursor:pointer}
 .rl-replay:hover{border-color:var(--br,var(--accent))}
 .rl-replay:focus-visible,.stx button:focus-visible{outline:2px solid #fff;outline-offset:2px}
