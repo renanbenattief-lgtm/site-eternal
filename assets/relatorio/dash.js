@@ -345,7 +345,10 @@ function mount(root,P){
  let cmpHtml="";
  if(cmpRows.length>=3){const gd=cmpRows.filter(r=>r.good>0).sort((a,b)=>Math.abs(b.ch)-Math.abs(a.ch)),bd=cmpRows.filter(r=>r.good<0).sort((a,b)=>Math.abs(b.ch)-Math.abs(a.ch));const fx=r=>`<b>${esc(r.l)}</b> (${r.ch>0?"+":"−"}${share(Math.abs(r.ch))})`;
   let tk=gd.length?`O que melhorou em relação a ${esc(prev.periodo||"o período anterior")}: ${gd.slice(0,3).map(fx).join(", ")}.`:"";if(VER==="eternal"&&bd.length)tk+=` O que piorou: ${bd.slice(0,3).map(fx).join(", ")}.`;
-  cmpHtml=`<div class="d-grid">${card("cmp",12,`Este período x ${prev.periodo||"período anterior"}`,"Quanto cada indicador mudou em relação ao período anterior. Verde: melhorou. Vermelho: piorou. Cinza: serve só de referência.",`<div class="ch" data-ch="cmp" style="height:${cmpRows.length*38+16}px"></div>`,tk)}</div>`;}
+  const fkB=(k,v)=>({investimento:money,custo_por_resultado:money,cpc:money,cpm:money,ctr:pct,frequencia:dec}[k]||int)(v);
+  const baRows=cmpRows.slice(0,7).map((r,i)=>{const a=Number(PT[r.k]),b=Number(T[r.k]),mxv=Math.max(Math.abs(a),Math.abs(b))||1;const cls=r.good>0?"good":r.good<0?"bad":"neu";
+   return `<div class="ba-r" style="--i:${i}"><div class="ba-l"><b>${esc(r.l)}</b><span class="ba-d ${cls}">${r.ch>0?"▲":r.ch<0?"▼":"="} ${share(Math.abs(r.ch))}</span></div><div class="ba-b prev"><span>Antes</span><i style="--w:${(Math.abs(a)/mxv*100).toFixed(1)}%"></i><em>${fkB(r.k,a)}</em></div><div class="ba-b now"><span>Agora</span><i style="--w:${(Math.abs(b)/mxv*100).toFixed(1)}%"></i><em>${fkB(r.k,b)}</em></div></div>`;}).join("");
+  cmpHtml=`<div class="d-grid">${card("cmp",12,`Antes x agora: ${prev.periodo||"período anterior"} x este período`,"Cada linha compara o mesmo indicador nos dois períodos. A barra de cima é o período anterior; a de baixo, o atual. Verde: melhorou. Vermelho: piorou. Cinza: serve só de referência.",`<div class="ba${STATIC?" go":""}" data-ba>${baRows}</div>`,tk)}</div>`;}
  add("numeros","Números","Os números principais","Na ordem do caminho do público: ver o anúncio, se interessar e agir.",`${metasHtml}<div class="kgroups" data-kpis></div>${cmpHtml}${g2?`<div class="d-grid">${g2}</div>`:""}`);
 
  if(dk){const howD=`Cada barra é um dia. A linha tracejada marca a média do período e o ponto amarelo, o melhor dia.${hasInvD&&!STATIC?" Passe o mouse sobre um dia para ver também o investimento.":""}`;
@@ -515,7 +518,7 @@ function mount(root,P){
    else if(isAll()&&days&&m==="resultados"&&N(t.resultados)&&!pm)dd=`≈ ${dec1(t.resultados/days)}/dia`;
    const vv=isAll()&&sp[m]?spark(sp[m],col):(shr?`<span class="mb"><i style="width:${Math.min(100,t[m]/T[m]*100).toFixed(1)}%"></i></span>`:"");
    const lbl=m==="resultados"?cap(tipo):m==="custo_por_resultado"?(pm?"Custo por mil pessoas":"Custo por resultado"):M.l;
-   return `<div class="kpi" style="--kc:${col}"><span class="l">${esc(lbl)}</span><span class="v">${F[M.f](v)}</span><span class="x">${esc(kx(m,tipo,pm,t))}</span><div class="foot"><span class="d ${cls}">${dd||"&nbsp;"}</span>${vv}</div></div>`;};
+   return `<div class="kpi${STATIC?"":" kd"}" style="--kc:${col}"${STATIC?"":` data-drill="${m}" role="button" tabindex="0" aria-label="${esc(lbl)}: ver de onde vem"`}><span class="l">${esc(lbl)}</span><span class="v">${F[M.f](v)}</span><span class="x">${esc(kx(m,tipo,pm,t))}</span><div class="foot"><span class="d ${cls}">${dd||"&nbsp;"}</span>${vv}</div></div>`;};
   Q("[data-kpis]").innerHTML=KG.map((g0,gi)=>{const g=gi===0&&mx?{...g0,t:"Investimento",s:"Quanto foi investido. Os resultados de cada objetivo estão no resumo acima."}:g0;const ms=g.m.filter(m=>N(t[m])!==null&&!((m==="resultados"||m==="custo_por_resultado")&&mx)&&!(m==="alcance"&&!mx&&t.alcance===t.resultados));
    return ms.length?`<div class="kg"><div class="kg-h" style="--gc:${g.c}"><b>${esc(g.t)}</b><span>${esc(g.s)}</span></div><div class="kpis">${ms.map(kcard).join("")}</div></div>`:"";}).join("");
   const fn=Q("[data-fnote]");if(fn)fn.textContent=isAll()?"Mostrando todas as campanhas":`Mostrando ${sel.size} de ${camps.length} campanhas`;
@@ -735,16 +738,45 @@ function mount(root,P){
  if(matC)matC.on("click",p=>{const c=mpts[p.dataIndex];if(c)toggle(c.i);});
  if(donC)donC.on("click",p=>{const c=camps.find(x=>x.nome===p.name);if(c)toggle(c.i);});
  if(objC)objC.on("click",p=>{const o=objs[p.dataIndex];if(o)pickObj(o);});
- const onClick=e=>{const g=e.target.closest("[data-go]");if(g){const s=root.querySelector(`[data-sec="${g.dataset.go}"]`);if(s)s.scrollIntoView({behavior:"smooth",block:"start"});return;}
+
+ /* ---- tocar num número: de onde ele vem (campanhas, dias, público) ---- */
+ const DRILL_ADD=["investimento","resultados","impressoes","cliques","conversas","compras","valor_conversao","engajamentos","cliques_link","leads","thruplays","seguidores","visualizacoes_pagina"];
+ let dzEl=null,dzBack=null;
+ function closeDrill(){if(!dzEl)return;dzEl.remove();dzEl=null;document.removeEventListener("keydown",dzKey);if(dzBack&&dzBack.focus)dzBack.focus({preventScroll:true});}
+ function dzKey(e){if(e.key==="Escape")closeDrill();}
+ function openDrill(m,from){if(STATIC)return;closeDrill();dzBack=from||null;
+  const vs=vis(),M=KM[m]||{l:m,f:"int"},fm=v=>F[M.f||"int"](v),t0=cur();
+  const tipo=isAll()?tipoAll:(mode(vs.map(c=>c.tipo))||tipoAll),pm=isAll()?porMilAll:vs.some(c=>c.porMil);
+  const tv=m==="custo_por_resultado"&&pm?div(t0.investimento,t0.resultados,1000):t0[m];
+  const lbl=m==="resultados"?cap(tipo):m==="custo_por_resultado"?(pm?"Custo por mil pessoas":"Custo por resultado"):M.l;
+  const add=DRILL_ADD.includes(m)&&!(m==="resultados"&&mixedAll);
+  const rowsC=vs.map(c=>{const d=derive({...c});let v=m==="custo_por_resultado"?(pm?div(c.investimento,c.resultados,1000):d.custo_por_resultado??div(c.investimento,c.resultados)):d[m];return {c,v:N(v)};}).filter(x=>x.v!==null);
+  const lowGood=M.b===-1;rowsC.sort((a,b)=>lowGood?a.v-b.v:b.v-a.v);
+  const mxC=Math.max(...rowsC.map(x=>Math.abs(x.v)),0)||1,totC=rowsC.reduce((a,x)=>a+x.v,0)||1;
+  const secC=rowsC.length>1?`<section class="dz-s"><h4>Por campanha</h4><p class="dz-n">${add?"Quanto cada campanha somou.":lowGood?"Da mais barata para a mais cara.":"Da maior para a menor."}</p>${rowsC.map((x,i)=>`<div class="dz-r" style="--i:${i}"><span class="dz-nm"><i style="background:${x.c.color}"></i>${esc(x.c.nome)}</span><span class="dz-bar"><b style="--w:${(Math.abs(x.v)/mxC*100).toFixed(1)}%;background:${x.c.color}"></b></span><span class="dz-val">${fm(x.v)}${add?`<small>${share(x.v/totC*100)}</small>`:""}</span></div>`).join("")}</section>`:"";
+  const sk=m==="custo_por_resultado"?null:(serie.length>=3&&serie.some(p=>N(p[m])!==null)?m:null);
+  let secD="";if(sk){const vals=serie.map(p=>N(p[sk])??0),mx=Math.max(...vals)||1,bi=vals.indexOf(Math.max(...vals)),w=100/vals.length;
+   secD=`<section class="dz-s"><h4>Dia a dia</h4><p class="dz-n">Melhor dia: <b>${esc(serie[bi].data)}</b>, com ${fm(vals[bi])}.${isAll()?"":" Soma de todas as campanhas."}</p><svg class="dz-ch" viewBox="0 0 100 40" preserveAspectRatio="none" aria-hidden="true">${vals.map((v,i)=>{const h=Math.max(.8,v/mx*38);return `<rect x="${(i*w+w*.15).toFixed(2)}" y="${(40-h).toFixed(2)}" width="${(w*.7).toFixed(2)}" height="${h.toFixed(2)}" rx=".5" style="--i:${i}" fill="${i===bi?brand:"rgba(148,163,184,.45)"}"/>`;}).join("")}</svg><div class="dz-ax"><span>${esc(serie[0].data)}</span><span>${esc(serie[serie.length-1].data)}</span></div></section>`;}
+  let secP="";const ag=(pub.idade_genero||[]).filter(r=>r&&r.faixa);const rg=(pub.regioes||[]).filter(r=>N(r.valor)>0);
+  if(["resultados","conversas","alcance","compras","leads","engajamentos","cliques"].includes(m)&&(ag.length||rg.length)){const prs=[];ag.forEach(r=>{[["Homens",N(r.homens)],["Mulheres",N(r.mulheres)]].forEach(([g,v])=>{if(v)prs.push({l:`${g}, ${r.faixa}`,v});});});prs.sort((a,b)=>b.v-a.v);const tp=prs.reduce((a,x)=>a+x.v,0)||1,tr=rg.reduce((a,x)=>a+Number(x.valor),0)||1;
+   secP=`<section class="dz-s"><h4>Quem e onde</h4><p class="dz-n">Medido em ${esc(String(pub.metrica||"resultados").toLowerCase())}, no período todo.</p>${prs.slice(0,3).map((x,i)=>`<div class="dz-r" style="--i:${i}"><span class="dz-nm">${esc(x.l)}</span><span class="dz-bar"><b style="--w:${(x.v/prs[0].v*100).toFixed(1)}%"></b></span><span class="dz-val">${share(x.v/tp*100)}</span></div>`).join("")}${rg.slice().sort((a,b)=>b.valor-a.valor).slice(0,3).map((x,i)=>`<div class="dz-r" style="--i:${i+3}"><span class="dz-nm">${esc(x.nome)}</span><span class="dz-bar"><b style="--w:${(x.valor/rg.reduce((a,y)=>Math.max(a,y.valor),0)*100).toFixed(1)}%"></b></span><span class="dz-val">${share(x.valor/tr*100)}</span></div>`).join("")}</section>`;}
+  const body=secC+secD+secP||`<p class="dz-n">Não há detalhamento para este número neste relatório.</p>`;
+  dzEl=document.createElement("div");dzEl.className="dz";dzEl.setAttribute("role","dialog");dzEl.setAttribute("aria-modal","true");dzEl.setAttribute("aria-label",`${lbl}: de onde vem`);dzEl.style.setProperty("--br",brand);
+  dzEl.innerHTML=`<div class="dz-p"><div class="dz-h"><div><span class="dz-k">${esc(lbl)}</span><b class="dz-v">${N(tv)!==null?fm(tv):"—"}</b><span class="dz-x">${esc(kx(m,tipo,pm,t0))}</span></div><button type="button" class="dz-c" aria-label="Fechar">✕</button></div><div class="dz-b">${body}</div></div>`;
+  dzEl.addEventListener("click",e=>{if(e.target===dzEl||e.target.closest(".dz-c"))closeDrill();});
+  document.body.appendChild(dzEl);document.addEventListener("keydown",dzKey);requestAnimationFrame(()=>{if(dzEl){dzEl.classList.add("on");const c=dzEl.querySelector(".dz-c");if(c)c.focus({preventScroll:true});}});}
+ const onKeyKpi=e=>{if((e.key==="Enter"||e.key===" ")&&e.target.closest&&e.target.closest("[data-drill]")){e.preventDefault();const k=e.target.closest("[data-drill]");openDrill(k.dataset.drill,k);}};
+ let baIO=null;const baObserve=()=>{const ba=Q("[data-ba]");if(!ba||STATIC||ba.classList.contains("go"))return;if(!("IntersectionObserver" in window)){ba.classList.add("go");return;}baIO=new IntersectionObserver(es=>{es.forEach(x=>{if(x.isIntersecting){x.target.classList.add("go");baIO.disconnect();}});},{threshold:.35});baIO.observe(ba);};
+ const onClick=e=>{const dr=e.target.closest("[data-drill]");if(dr&&!STATIC){openDrill(dr.dataset.drill,dr);return;}const g=e.target.closest("[data-go]");if(g){const s=root.querySelector(`[data-sec="${g.dataset.go}"]`);if(s)s.scrollIntoView({behavior:"smooth",block:"start"});return;}
   const s=e.target.closest("[data-sort]");if(s){const k=s.dataset.sort;if(sortK===k)sortD=-sortD;else{sortK=k;sortD=(k==="custo_por_resultado"||k==="nome")?1:-1;}drawTable();return;}
   if(PICK){const pk=e.target.closest("[data-pick]");if(pk){const c=AC[+pk.dataset.pick];if(!c)return;const has=SELN.includes(c.nome);pickSet(SELN.length?(has?SELN.filter(n=>n!==c.nome):SELN.concat([c.nome])):[c.nome]);return;}
    if(e.target.closest("[data-pall]")){if(SELN.length)P.onSelect([]);return;}const po=e.target.closest("[data-pobj]");if(po){pickObj(po.dataset.pobj);return;}}
   const ob=e.target.closest("[data-obj]");if(ob){pickObj(ob.dataset.obj);return;}
   const b=e.target.closest("[data-sel]");if(b){toggle(+b.dataset.sel);return;}if(e.target.closest("[data-all]")){sel.clear();redraw();}};
- root.addEventListener("click",onClick);
- redraw();
+ root.addEventListener("click",onClick);root.addEventListener("keydown",onKeyKpi);
+ redraw();baObserve();
  let to;const ro=new ResizeObserver(()=>{clearTimeout(to);to=setTimeout(()=>{charts.forEach(c=>c.resize());if(narrow()!==NAR)drawFiltered();},80);});ro.observe(root);
- return {dispose(){ro.disconnect();root.removeEventListener("click",onClick);charts.forEach(c=>c.dispose());}};
+ return {dispose(){ro.disconnect();root.removeEventListener("click",onClick);root.removeEventListener("keydown",onKeyKpi);if(baIO)baIO.disconnect();closeDrill();charts.forEach(c=>c.dispose());}};
 }
 return {mount,derive,OBJ,normObj,inferObj};
 })();

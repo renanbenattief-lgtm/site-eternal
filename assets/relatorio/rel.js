@@ -127,6 +127,35 @@ function Story(P,onDone){
  go(0);raf=requestAnimationFrame(tick);
 }
 
+
+/* ---------- recorte de período no próprio link ---------- */
+const DK=["investimento","impressoes","cliques","cliques_link","resultados","conversas","leads","compras","valor_conversao","engajamentos","visualizacoes_pagina","thruplays"];
+const MES=["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+const isoD=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const fromIso=s=>{const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(s||"");return m?new Date(+m[1],+m[2]-1,+m[3]):null;};
+function diarioRows(P){const d=P.rep&&P.rep.data&&P.rep.data.diario;if(!d||!Array.isArray(d.r)||!Array.isArray(d.k))return [];return d.r.map(row=>{const o={};d.k.forEach((k,i)=>{o[k]=row[i];});return o;}).filter(o=>o._name&&o._d);}
+function perLabel(a,b){const sy=a.getFullYear()===b.getFullYear(),sm=sy&&a.getMonth()===b.getMonth();
+ if(sm&&a.getDate()===b.getDate())return `${a.getDate()} de ${MES[a.getMonth()]} de ${a.getFullYear()}`;
+ return sm?`${a.getDate()} a ${b.getDate()} de ${MES[b.getMonth()]} de ${b.getFullYear()}`:sy?`${a.getDate()} de ${MES[a.getMonth()]} a ${b.getDate()} de ${MES[b.getMonth()]} de ${b.getFullYear()}`:`${a.getDate()} de ${MES[a.getMonth()]} de ${a.getFullYear()} a ${b.getDate()} de ${MES[b.getMonth()]} de ${b.getFullYear()}`;}
+function periodOptions(rows){const ds=[...new Set(rows.map(r=>r._d))].sort();if(ds.length<5)return [];const first=fromIso(ds[0]),last=fromIso(ds[ds.length-1]);
+ const back=n=>{const a=new Date(last);a.setDate(a.getDate()-(n-1));return a<first?first:a;};const out=[{id:"all",l:"Tudo"}];
+ if(ds.length>=10)out.push({id:"7",l:"Últimos 7 dias",a:back(7),b:last});
+ if(ds.length>=21)out.push({id:"14",l:"Últimos 14 dias",a:back(14),b:last});
+ const months=[...new Set(ds.map(x=>x.slice(0,7)))];
+ if(months.length>=2)months.forEach(mk=>{const [y,m]=mk.split("-").map(Number);const a=new Date(Math.max(new Date(y,m-1,1),first)),b=new Date(Math.min(new Date(y,m,0),last));out.push({id:"m"+mk,l:cap(MES[m-1]),a,b});});
+ return out;}
+function cutPayload(P,rows,a,b){const A=isoD(a),B=isoD(b),d=P.rep.data,rs=rows.filter(r=>r._d>=A&&r._d<=B),byC=new Map();
+ rs.forEach(r=>{const c=byC.get(r._name)||{};DK.forEach(k=>{const v=N(r[k]);if(v!==null)c[k]=(c[k]||0)+v;});byC.set(r._name,c);});
+ const reachT=t=>/alcan/i.test(t||"");
+ const camps=(d.campanhas||[]).filter(c=>c&&byC.has(c.nome)&&(byC.get(c.nome).investimento||0)>0).map(c=>{const sm=byC.get(c.nome);const o={...c};DK.forEach(k=>{o[k]=sm[k]??null;});o.alcance=null;o.frequencia=null;o.ctr=null;o.cpc=null;o.cpm=null;
+  if(reachT(c.tipo_resultado)){o.resultados=null;o.custo_por_resultado=null;}else o.custo_por_resultado=N(o.resultados)?o.investimento/o.resultados:null;return o;});
+ const T={};DK.forEach(k=>{const v=camps.map(c=>N(c[k])).filter(x=>x!==null);T[k]=v.length?v.reduce((x,y)=>x+y,0):null;});
+ const tipos=[...new Set(camps.map(c=>c.tipo_resultado||""))],single=tipos.length===1&&!reachT(tipos[0]);
+ if(!single){T.resultados=null;T.custo_por_resultado=null;}else T.custo_por_resultado=N(T.resultados)?T.investimento/T.resultados:null;
+ T.alcance=null;T.frequencia=null;
+ const data={...d,campanhas:camps,totais:T,serie_diaria:(d.serie_diaria||[]).filter(p=>p&&p.iso&&p.iso>=A&&p.iso<=B),publico:{},video:null,metas:undefined,anterior:undefined,diario:undefined,custo_por_mil:false,alcance_somado:false,observacoes:"",tipo_resultado:single?tipos[0]:d.tipo_resultado,objetivo_principal:single?d.objetivo_principal:null};
+ return {...P,prev:null,rep:{...P.rep,periodo:perLabel(a,b),data,analise:{}}};}
+
 /* ---------- página ---------- */
 async function main(){
  const token=tokenOf();
@@ -138,9 +167,18 @@ async function main(){
  const B=brand(c.color);document.documentElement.style.setProperty("--br",B.hex);
  $("#boot").remove();
  const root=$("#root");root.hidden=false;
- const bar=document.createElement("div");bar.className="rl-bar";bar.innerHTML=`<button type="button" class="rl-replay">▶ Ver a retrospectiva</button>`;root.before(bar);
- try{window.EternalDash.mount(root,{...P,version:"cliente"});}
- catch(e){root.insertAdjacentHTML("afterbegin",`<p class="rl-err">Não foi possível montar o painel neste navegador. Tente abrir no Chrome, Safari ou Edge.</p>`);}
+ const rows=diarioRows(P),opts=periodOptions(rows);let cur="all",dash=null;
+ const bar=document.createElement("div");bar.className="rl-bar";
+ bar.innerHTML=`${opts.length?`<div class="rl-per" role="group" aria-label="Período do relatório"><span class="rl-pl">Período</span>${opts.map(o=>`<button type="button" class="rl-chip" data-per="${o.id}" aria-pressed="${o.id==="all"}">${esc(o.l)}</button>`).join("")}</div>`:""}<button type="button" class="rl-replay">▶ Ver a retrospectiva</button>`;root.before(bar);
+ const note=document.createElement("p");note.className="rl-note";note.hidden=true;bar.after(note);
+ const mountWith=pl=>{try{if(dash&&dash.dispose)dash.dispose();root.innerHTML="";dash=window.EternalDash.mount(root,{...pl,version:"cliente"});}
+  catch(e){root.innerHTML=`<p class="rl-err">Não foi possível montar o painel neste navegador. Tente abrir no Chrome, Safari ou Edge.</p>`;}};
+ mountWith(P);
+ bar.addEventListener("click",e=>{const b=e.target.closest("[data-per]");if(!b||b.dataset.per===cur)return;cur=b.dataset.per;const o=opts.find(x=>x.id===cur);
+  bar.querySelectorAll("[data-per]").forEach(x=>x.setAttribute("aria-pressed",String(x.dataset.per===cur)));
+  const y=window.scrollY;if(!o||o.id==="all"){mountWith(P);note.hidden=true;}
+  else{mountWith(cutPayload(P,rows,o.a,o.b));note.hidden=false;note.textContent=`Mostrando ${perLabel(o.a,o.b)}. Público, regiões, horários e alcance aparecem só em "Tudo", porque não dá para somar pessoas dia a dia sem contar a mesma pessoa duas vezes.`;}
+  requestAnimationFrame(()=>window.scrollTo(0,y));});
  const skip=new URLSearchParams(location.search).has("painel");
  const open=()=>Story(P,()=>{window.scrollTo(0,0);});
  bar.querySelector(".rl-replay").addEventListener("click",open);
