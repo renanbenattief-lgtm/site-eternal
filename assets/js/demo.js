@@ -29,7 +29,8 @@
   const finalSummary = summary.textContent.trim();
   const finalScore = parseInt(score.firstChild.textContent, 10) || 0;
 
-  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // mesma regra do main.js: efeitos para todos, estático só com ?estatico
+  const reduced = /[?&]estatico\b/.test(location.search);
   let timers = [];
   let running = false;
   let played = false;

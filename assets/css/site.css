@@ -836,7 +836,6 @@ fieldset.field { border: 0; margin: 0; padding: 0; min-width: 0; }
 @keyframes shimmer { 0%, 58% { background-position: 130% 0; } 100% { background-position: -30% 0; } }
 @media (max-width: 380px) { .ignite-float { padding: 0 15px; letter-spacing: 0.16em; gap: 7px; } }
 .reduced .ignite-float::before, .reduced .nav__ignite svg, .reduced .ignite-float svg { animation: none; }
-@media (prefers-reduced-motion: reduce) { .ignite-float::before, .nav__ignite svg, .ignite-float svg { animation: none; } }
 
 /* convite para digitar o nome depois que a cidade acende com "Sua Marca" */
 .city__namebox.is-invite { animation: invite 1.5s ease-in-out 3; }
@@ -892,9 +891,7 @@ fieldset.field { border: 0; margin: 0; padding: 0; min-width: 0; }
 }
 
 /* ---------- movimento reduzido: tudo visível, sem cenas presas ---------- */
-@media (prefers-reduced-motion: reduce) {
-  .grain::before, .marquee__row, .hero__cue i::after { animation: none; }
-}
+.reduced .grain::before, .reduced .marquee__row, .reduced .hero__cue i::after { animation: none; }
 .reduced .beat, .reduced .method { position: relative; opacity: 1; padding-block: 18vh; }
 .reduced .stage { display: flex; flex-direction: column; }
 .reduced .hero { position: relative; height: 100vh; height: 100svh; order: -1; flex: none; }

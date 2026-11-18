@@ -15,8 +15,9 @@
   const smooth = (t) => t * t * (3 - 2 * t);
 
   const hasGSAP = !!(window.gsap && window.ScrollTrigger);
-  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (prefersReduced || !hasGSAP) html.classList.add('reduced');
+  // Efeitos em todo aparelho (ver main.js): só fica estático sem GSAP ou com ?estatico.
+  const forceStatic = /[?&]estatico\b/.test(location.search);
+  if (forceStatic || !hasGSAP) html.classList.add('reduced');
   const reduced = html.classList.contains('reduced');
   const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
   // celular / tela em pé: versões verticais (mesma regra do CSS: max-aspect-ratio 10/11 ou < 700px)
@@ -75,7 +76,7 @@
           // iOS: tocar e pausar "destrava" a decodificação de quadros
           const p = v.play();
           const settle = () => { v.pause(); seek(s, s.target, true); v.classList.add('is-ready'); resolve(s); };
-          if (p && p.then) p.then(settle).catch(settle);
+          if (p && p.then) p.then(() => { s.unlocked = true; settle(); }).catch(settle);
           else settle();
         };
         v.addEventListener('loadeddata', done, { once: true });
@@ -104,6 +105,25 @@
     } catch (e) { /* ignora */ }
   }
   const scenes = [];
+  // Economia de bateria (iPhone) bloqueia vídeo sem toque: a cada toque/clique, destrava os
+  // vídeos que já receberam arquivo e ainda não rodaram (mesma lógica do main.js).
+  const unlockEvts = ['touchend', 'click', 'keydown'];
+  function unlockVideos() {
+    scenes.forEach((s) => {
+      const v = s.v;
+      if (s.unlocked || s.unlocking || !v.currentSrc) return;
+      s.unlocking = true;
+      let p;
+      try { p = v.play(); } catch (e) { p = null; }
+      const ok = () => { s.unlocked = true; s.unlocking = false; v.pause(); seek(s, s.target, true); };
+      const no = () => { s.unlocking = false; };
+      if (p && p.then) p.then(ok, no); else no();
+    });
+    if (scenes.length && scenes.every((s) => s.unlocked)) unlockEvts.forEach((e) => window.removeEventListener(e, unlockVideos, true));
+  }
+  unlockEvts.forEach((e) => window.addEventListener(e, unlockVideos, { capture: true, passive: true }));
+  // um vídeo travado não segura os próximos da fila
+  const loadOrSkip = (s) => Promise.race([loadScene(s), new Promise((ok) => setTimeout(ok, 9000))]);
 
   /* ---------------------------------------------------------------------
      Entrada: traços de luz (canvas) desenham o corredor
@@ -283,7 +303,7 @@
     if (hasGSAP) ScrollTrigger.refresh();
     intro();
     // as salas carregam em sequência, sem pesar a entrada
-    if (!reduced) rooms.reduce((p, r) => p.then(() => loadScene(r.scene)), Promise.resolve());
+    if (!reduced) rooms.reduce((p, r) => p.then(() => loadOrSkip(r.scene)), Promise.resolve());
   }
 
   /* ---------------------------------------------------------------------

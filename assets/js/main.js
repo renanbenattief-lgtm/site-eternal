@@ -14,8 +14,11 @@
   const smooth = (t) => t * t * (3 - 2 * t);
 
   const hasGSAP = !!(window.gsap && window.ScrollTrigger);
-  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (prefersReduced || !hasGSAP) html.classList.add('reduced');
+  // Os efeitos rodam em todo aparelho. A opção "reduzir movimento" do sistema (que muitos
+  // celulares ligam sozinhos na economia de bateria) não desliga mais o site.
+  // Versão estática só se o GSAP não carregar ou com ?estatico no endereço.
+  const forceStatic = /[?&]estatico\b/.test(location.search);
+  if (forceStatic || !hasGSAP) html.classList.add('reduced');
   const reduced = html.classList.contains('reduced');
   const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
   // celular / tela em pé recebe os vídeos verticais (9:16)
@@ -81,7 +84,7 @@
           s.ready = true;
           // iOS: tocar e pausar "destrava" a decodificação de quadros
           const p = v.play();
-          if (p && p.then) p.then(() => { v.pause(); seek(s, s.target, true); }).catch(() => seek(s, s.target, true));
+          if (p && p.then) p.then(() => { s.unlocked = true; v.pause(); seek(s, s.target, true); }).catch(() => seek(s, s.target, true));
           else seek(s, s.target, true);
           resolve(s);
         };
@@ -99,6 +102,26 @@
     });
     return s.loading;
   }
+
+  // Economia de bateria (iPhone) bloqueia vídeo sem toque: a cada toque/clique, destrava os
+  // vídeos que já receberam arquivo e ainda não rodaram. Depois que todos destravam, para de ouvir.
+  const unlockEvts = ['touchend', 'click', 'keydown'];
+  function unlockVideos() {
+    scenes.forEach((s) => {
+      const v = s.v;
+      if (s.unlocked || s.unlocking || !v.currentSrc) return;
+      s.unlocking = true;
+      let p;
+      try { p = v.play(); } catch (e) { p = null; }
+      const ok = () => { s.unlocked = true; s.unlocking = false; v.pause(); seek(s, s.target, true); };
+      const no = () => { s.unlocking = false; };
+      if (p && p.then) p.then(ok, no); else no();
+    });
+    if (scenes.every((s) => s.unlocked)) unlockEvts.forEach((e) => window.removeEventListener(e, unlockVideos, true));
+  }
+  unlockEvts.forEach((e) => window.addEventListener(e, unlockVideos, { capture: true, passive: true }));
+  // um vídeo travado não segura os próximos da fila
+  const loadOrSkip = (s) => Promise.race([loadScene(s), new Promise((ok) => setTimeout(ok, 9000))]);
 
   function seek(s, t, force) {
     if (!s.ready) return;
@@ -190,7 +213,7 @@
     if (window.__jumpToHash) window.__jumpToHash();
     // o resto das cenas carrega em sequência, sem pesar a primeira
     if (!reduced) {
-      scenes.slice(1).reduce((p, s) => p.then(() => loadScene(s)), Promise.resolve());
+      scenes.slice(1).reduce((p, s) => p.then(() => loadOrSkip(s)), Promise.resolve());
     }
   }
 
