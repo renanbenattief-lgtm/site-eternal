@@ -992,7 +992,7 @@
       let text = 'Olá, ETERNAL! Sou ' + nome + (empresa ? ', da ' + empresa : '') + '.';
       if (interesses.length) text += '\nQuero construir: ' + interesses.join(', ') + '.';
       if (msg) text += '\n' + msg;
-      const href = 'https://wa.me/5569993130318?text=' + encodeURIComponent(text);
+      const href = 'https://wa.me/5541996974910?text=' + encodeURIComponent(text);
       const done = $('#formDone');
       const link = $('#formDoneLink');
       if (done && link) {
